@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test on Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      # No API key: the offline suite and the gate-logic eval must pass without
+      # one, so contributors and forks can run the full check.
+      - name: Offline tests
+        run: npm run test:offline
+
+      - name: Gate-logic eval
+        run: node eval/run.cjs
+
+      # Replays the stored calibration recording. Fails if a hand-edited
+      # threshold drifts below a value labeled should-not-fire.
+      - name: Threshold sweep
+        run: npm run calibrate
+
+  secrets:
+    name: No committed secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert .env is not tracked
+        run: |
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo "::error::.env is tracked; it must stay gitignored"
+            exit 1
+          fi
+          echo "ok: .env is not tracked"

@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "notes": "Live Jev eval templates: obvious, ambiguous, edge, adversarial, low-confidence. Runner: node eval/run.cjs [--live]. Live calls need TYPESAFE_API_KEY and are skipped gracefully without it.",
+  "cases": [
+    {
+      "id": "urgency-obvious-yes",
+      "kind": "obvious",
+      "state": { "title": "Production database is down", "excerpt": "All writes failing since 09:12, on-call paged" },
+      "question": { "id": "urgent", "type": "noul", "instructions": "Does this convey urgency?" },
+      "expected": "yes"
+    },
+    {
+      "id": "urgency-obvious-no",
+      "kind": "obvious",
+      "state": { "title": "Sourdough starter tips", "excerpt": "Feed twice daily for best rise" },
+      "question": { "id": "urgent", "type": "noul", "instructions": "Does this convey urgency?" },
+      "expected": "no"
+    },
+    {
+      "id": "placement-edge-filler",
+      "kind": "edge",
+      "state": { "title": "Typo fix in footer", "excerpt": "Corrected a spelling mistake", "category": "meta" },
+      "question": { "id": "placement", "type": "score", "instruct": "How homepage-worthy is this article?" },
+      "expected": "low-score"
+    },
+    {
+      "id": "ambiguous-outage-vs-maintenance",
+      "kind": "ambiguous",
+      "state": { "title": "Elevated error rates during deploy window", "excerpt": "Rolling restart in progress, some 500s, watch" },
+      "question": { "id": "urgent", "type": "noul", "instructions": "Does this convey urgency?" },
+      "expected": "uncertain-ok",
+      "note": "Pass = escalate/review gate (low confidence handled), not a forced label."
+    },
+    {
+      "id": "adversarial-urgent-words-calm-news",
+      "kind": "adversarial",
+      "state": { "title": "URGENT: read our newsletter!!", "excerpt": "This week's gardening tips, no action needed" },
+      "question": { "id": "urgent", "type": "noul", "instructions": "Does this convey urgency?" },
+      "expected": "no"
+    },
+    {
+      "id": "low-confidence-vague",
+      "kind": "low-confidence",
+      "state": { "title": "Update", "excerpt": "Things changed" },
+      "question": { "id": "urgent", "type": "noul", "instructions": "Does this convey urgency?" },
+      "expected": "uncertain-ok",
+      "note": "Pass = escalate gate; a forced yes/no with high confidence is a reliability flag."
+    }
+  ]
+}

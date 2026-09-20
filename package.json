@@ -1,0 +1,63 @@
+{
+  "name": "jevengineeringgate",
+  "version": "1.0.0",
+  "description": "A calibrated decision layer and risk gate for AI coding agents. Routes yes/no, pick-one and score-this judgments to the Jev System One model, then enforces the result deterministically through host hooks.",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test test/ && node eval/run.cjs && node eval/calibrate.cjs",
+    "test:offline": "node --test test/",
+    "eval:live": "node eval/run.cjs --live",
+    "calibrate:record": "node eval/calibrate.cjs --record",
+    "calibrate": "node eval/calibrate.cjs",
+    "gate": "node bin/jev-gate.cjs"
+  },
+  "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0"
+  },
+  "bin": {
+    "jev-gate": "bin/jev-gate.cjs",
+    "jev-compact": "bin/jev-compact.cjs",
+    "jev-verify": "bin/jev-verify.cjs",
+    "jev-route": "bin/jev-route.cjs"
+  },
+  "keywords": [
+    "ai-agents",
+    "agent-safety",
+    "llm-guardrails",
+    "claude-code",
+    "claude-code-hooks",
+    "pretooluse",
+    "decision-model",
+    "jev",
+    "typesafe-ai",
+    "system-one",
+    "threshold-calibration",
+    "context-compaction",
+    "tool-gating",
+    "risk-gate",
+    "llm-routing"
+  ],
+  "homepage": "https://github.com/RavenRepo/jevengineeringgate#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RavenRepo/jevengineeringgate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RavenRepo/jevengineeringgate/issues"
+  },
+  "author": "RavenRepo (https://github.com/RavenRepo)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "lib/",
+    "bin/",
+    "hooks/",
+    "eval/",
+    "docs/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ]
+}

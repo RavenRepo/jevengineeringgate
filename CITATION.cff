@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: "jevengineeringgate: a calibrated decision layer and risk gate for AI coding agents"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - name: "RavenRepo"
+    website: "https://github.com/RavenRepo"
+repository-code: "https://github.com/RavenRepo/jevengineeringgate"
+url: "https://github.com/RavenRepo/jevengineeringgate"
+abstract: >-
+  An open-source decision layer for AI coding agents, built on the Jev System One
+  model from TypeSafe AI. Routes yes/no, pick-one and score-this judgments away
+  from expensive generative models to a model built to decide, and enforces the
+  result deterministically through Claude Code PreToolUse and UserPromptSubmit
+  hooks. Includes a fitted threshold calibration harness, a deterministic deny
+  floor, output verification, model routing, and context compaction as a
+  relevance filter rather than a summarization prompt.
+keywords:
+  - ai-agents
+  - llm-guardrails
+  - agent-safety
+  - claude-code
+  - decision-model
+  - jev
+  - typesafe-ai
+  - calibration
+  - context-compaction
+  - tool-gating
+license: MIT
