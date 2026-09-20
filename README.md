@@ -227,6 +227,10 @@ with no network and no key. Only `--live` eval and calibration need one.
 - [Security policy](SECURITY.md) — threat model and what counts as a vulnerability
 - [Changelog](CHANGELOG.md)
 
+## Author
+
+**Amit Kumar** — aka **growthperclick** — GitHub: [@RavenRepo](https://github.com/RavenRepo)
+
 ## Credits
 
 Built on [Jev](https://typesafe.ai), the System One model from TypeSafe AI.
@@ -236,4 +240,4 @@ host hook enforcement are this project's contribution.
 
 ## License
 
-[MIT](LICENSE) © [RavenRepo](https://github.com/RavenRepo)
+[MIT](LICENSE) © Amit Kumar ([@RavenRepo](https://github.com/RavenRepo))
