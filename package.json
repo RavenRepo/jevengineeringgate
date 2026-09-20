@@ -4,8 +4,8 @@
   "description": "A calibrated decision layer and risk gate for AI coding agents. Routes yes/no, pick-one and score-this judgments to the Jev System One model, then enforces the result deterministically through host hooks.",
   "type": "commonjs",
   "scripts": {
-    "test": "node --test test/ && node eval/run.cjs && node eval/calibrate.cjs",
-    "test:offline": "node --test test/",
+    "test": "node --test test/*.test.cjs && node eval/run.cjs && node eval/calibrate.cjs",
+    "test:offline": "node --test test/*.test.cjs",
     "eval:live": "node eval/run.cjs --live",
     "calibrate:record": "node eval/calibrate.cjs --record",
     "calibrate": "node eval/calibrate.cjs",
