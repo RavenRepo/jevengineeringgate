@@ -12,7 +12,8 @@
 // bypasses Claude Code's own permission prompt, so emitting it would make the
 // session more permissive than it was without the gate. The gate is additive:
 //   deny  -- deterministic catastrophe, or Jev is confident this destroys data
-//   ask   -- Jev sees risk; the human decides
+//   ask   -- only with JEV_TOOL_ASK=1; by default a risk short of deny is
+//            passed to the agent as context and the call proceeds
 //   {}    -- no opinion; normal permission flow proceeds untouched
 // Set JEV_TOOL_AUTO_ALLOW=1 to opt into allow-on-clear for speed.
 //
@@ -39,6 +40,16 @@ function decision(kind, reason) {
   };
 }
 const PASS = process.env.JEV_TOOL_AUTO_ALLOW === "1" ? (r) => decision("allow", r) : () => null;
+
+// The agent decides, not the person. An "ask" from a hook prompts the person
+// even in bypass mode, so by default a risk short of a deny is handed to the
+// agent as context and the call proceeds through the normal permission flow.
+// JEV_TOOL_ASK=1 restores prompting the person.
+const ASK_PERSON = process.env.JEV_TOOL_ASK === "1";
+function caution(reason) {
+  if (ASK_PERSON) return decision("ask", reason);
+  return { continue: true, hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: `${reason} Weigh this before relying on the result; the call was not blocked.` } };
+}
 
 function readStdin() {
   return new Promise((res) => {
@@ -112,7 +123,7 @@ async function main() {
   const hit = cacheGet(key);
   if (hit) {
     if (hit.verdict === "deny") return emit(decision("deny", hit.reason));
-    if (hit.verdict === "ask") return emit(decision("ask", hit.reason));
+    if (hit.verdict === "ask") return emit(caution(hit.reason));
     return emit(PASS(hit.reason));
   }
 
@@ -131,7 +142,7 @@ async function main() {
     // calls the deterministic floor does not already find alarming.
     const text = `${toolName} ${JSON.stringify(toolInput)}`;
     if (!config.toolFailOpen || DESTRUCTIVE_RE.test(text)) {
-      return emit(decision("ask", `[jev] decision layer unavailable (${res.reason}) and this call matches a destructive pattern. Confirm manually.`));
+      return emit(caution(`[jev] decision layer unavailable (${res.reason}) and this call matches a destructive pattern.`));
     }
     return emit(null);
   }
@@ -162,7 +173,7 @@ async function main() {
 
   cacheSet(key, { verdict, reason });
   if (verdict === "deny") return emit(decision("deny", reason));
-  if (verdict === "ask") return emit(decision("ask", reason));
+  if (verdict === "ask") return emit(caution(reason));
   return emit(PASS(reason));
 }
 

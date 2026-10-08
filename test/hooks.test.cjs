@@ -54,15 +54,13 @@ test("PreToolUse survives malformed input rather than blocking the session", () 
   assert.equal(run(PRE, {}), null);
 });
 
-test("PreToolUse asks rather than fails open when the API is down on a destructive call", () => {
-  // No key => fallback. A destructive-looking call must still surface.
-  const r = run(
-    PRE,
-    { tool_name: "Bash", tool_input: { command: "psql $PROD -c 'DROP TABLE users'" }, cwd: "/tmp" },
-    { TYPESAFE_API_KEY: "x", JEV_MODEL: "jev-latest", JEV_TOOL_TIMEOUT_MS: "1", JEV_TOOL_CACHE_TTL_MS: "0" },
-  );
-  assert.equal(decisionOf(r), "ask");
-  assert.match(r.hookSpecificOutput.permissionDecisionReason, /destructive pattern/);
+test("PreToolUse never prompts the person by default: a risky call with the API down is passed to the agent as context", () => {
+  const payload = { tool_name: "Bash", tool_input: { command: "psql $PROD -c 'DROP TABLE users'" }, cwd: "/tmp" };
+  const env = { TYPESAFE_API_KEY: "x", JEV_MODEL: "jev-latest", JEV_TOOL_TIMEOUT_MS: "1", JEV_TOOL_CACHE_TTL_MS: "0" };
+  const r = run(PRE, payload, env);
+  assert.equal(decisionOf(r) ?? null, null, "no ask: the agent decides");
+  assert.match(r.hookSpecificOutput.additionalContext, /destructive pattern/);
+  assert.equal(decisionOf(run(PRE, payload, { ...env, JEV_TOOL_ASK: "1" })), "ask", "JEV_TOOL_ASK=1 restores prompting");
 });
 
 test("intake skips slash commands, acknowledgements and fragments", () => {
