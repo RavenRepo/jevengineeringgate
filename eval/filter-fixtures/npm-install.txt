@@ -1,0 +1,84 @@
+npm warn deprecated pkg-0@1.0.0: This package is no longer supported.
+npm warn deprecated pkg-1@1.0.1: This package is no longer supported.
+npm warn deprecated pkg-2@1.0.2: This package is no longer supported.
+npm warn deprecated pkg-3@1.0.3: This package is no longer supported.
+npm warn deprecated pkg-4@1.0.4: This package is no longer supported.
+npm warn deprecated pkg-5@1.0.5: This package is no longer supported.
+npm warn deprecated pkg-6@1.0.6: This package is no longer supported.
+npm warn deprecated pkg-7@1.0.7: This package is no longer supported.
+npm warn deprecated pkg-8@1.0.8: This package is no longer supported.
+npm warn deprecated pkg-9@1.0.9: This package is no longer supported.
+npm warn deprecated pkg-10@1.0.10: This package is no longer supported.
+npm warn deprecated pkg-11@1.0.11: This package is no longer supported.
+npm warn deprecated pkg-12@1.0.12: This package is no longer supported.
+npm warn deprecated pkg-13@1.0.13: This package is no longer supported.
+npm warn deprecated pkg-14@1.0.14: This package is no longer supported.
+npm warn deprecated pkg-15@1.0.15: This package is no longer supported.
+npm warn deprecated pkg-16@1.0.16: This package is no longer supported.
+npm warn deprecated pkg-17@1.0.17: This package is no longer supported.
+npm warn deprecated pkg-18@1.0.18: This package is no longer supported.
+npm warn deprecated pkg-19@1.0.19: This package is no longer supported.
+npm warn deprecated pkg-20@1.0.20: This package is no longer supported.
+npm warn deprecated pkg-21@1.0.21: This package is no longer supported.
+npm warn deprecated pkg-22@1.0.22: This package is no longer supported.
+npm warn deprecated pkg-23@1.0.23: This package is no longer supported.
+npm warn deprecated pkg-24@1.0.24: This package is no longer supported.
+npm warn deprecated pkg-25@1.0.25: This package is no longer supported.
+npm warn deprecated pkg-26@1.0.26: This package is no longer supported.
+npm warn deprecated pkg-27@1.0.27: This package is no longer supported.
+npm warn deprecated pkg-28@1.0.28: This package is no longer supported.
+npm warn deprecated pkg-29@1.0.29: This package is no longer supported.
+npm warn deprecated pkg-30@1.0.30: This package is no longer supported.
+npm warn deprecated pkg-31@1.0.31: This package is no longer supported.
+npm warn deprecated pkg-32@1.0.32: This package is no longer supported.
+npm warn deprecated pkg-33@1.0.33: This package is no longer supported.
+npm warn deprecated pkg-34@1.0.34: This package is no longer supported.
+npm warn deprecated pkg-35@1.0.35: This package is no longer supported.
+npm warn deprecated pkg-36@1.0.36: This package is no longer supported.
+npm warn deprecated pkg-37@1.0.37: This package is no longer supported.
+npm warn deprecated pkg-38@1.0.38: This package is no longer supported.
+npm warn deprecated pkg-39@1.0.39: This package is no longer supported.
+
+added 812 packages, and audited 813 packages in 14s
+
+143 packages are looking for funding
+  run `npm fund` for details
+
+npm http fetch GET 200 https://registry.npmjs.org/dep-0 20ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-1 21ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-2 22ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-3 23ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-4 24ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-5 25ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-6 26ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-7 27ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-8 28ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-9 29ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-10 30ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-11 31ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-12 32ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-13 33ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-14 34ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-15 35ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-16 36ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-17 37ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-18 38ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-19 39ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-20 40ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-21 41ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-22 42ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-23 43ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-24 44ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-25 45ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-26 46ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-27 47ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-28 48ms (cache revalidated)
+npm http fetch GET 200 https://registry.npmjs.org/dep-29 49ms (cache revalidated)
+
+npm error code ERESOLVE
+npm error ERESOLVE unable to resolve dependency tree
+npm error Found: react@19.1.0
+npm error Could not resolve dependency: peer react@"^18.0.0" from legacy-modal@2.4.1
+
+1 high severity vulnerability
+Run `npm audit` for details.

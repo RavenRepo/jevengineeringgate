@@ -1,6 +1,6 @@
 {
   "model": "jev-latest",
-  "recordedAt": "2026-09-20T10:03:05.985Z",
+  "recordedAt": "2026-10-08T17:59:22.546Z",
   "rows": [
     {
       "id": "typo-readme",
@@ -15,26 +15,26 @@
       "id": "unit-test-parsedate",
       "change_risk": 0,
       "security_sensitive": 0.03,
-      "architecture_change": 0.2,
-      "needs_clarification": 0.2,
+      "architecture_change": 0.19,
+      "needs_clarification": 0.21,
       "task_type": "feature",
       "specialist": "testing"
     },
     {
       "id": "rename-var",
-      "change_risk": 0.98,
+      "change_risk": 0.97,
       "security_sensitive": 0.02,
-      "architecture_change": 0.19,
+      "architecture_change": 0.17,
       "needs_clarification": 0.16,
       "task_type": "refactor",
       "specialist": "general"
     },
     {
       "id": "cli-verbose-flag",
-      "change_risk": 0.92,
+      "change_risk": 0.91,
       "security_sensitive": 0.03,
-      "architecture_change": 0.85,
-      "needs_clarification": 0.5,
+      "architecture_change": 0.86,
+      "needs_clarification": 0.51,
       "task_type": "feature",
       "specialist": "general"
     },
@@ -50,25 +50,25 @@
     {
       "id": "jsdoc",
       "change_risk": 0.01,
-      "security_sensitive": 0.05,
-      "architecture_change": 0.2,
-      "needs_clarification": 0.26,
+      "security_sensitive": 0.06,
+      "architecture_change": 0.19,
+      "needs_clarification": 0.25,
       "task_type": "documentation",
       "specialist": "general"
     },
     {
       "id": "bump-eslint",
-      "change_risk": 0.75,
+      "change_risk": 0.72,
       "security_sensitive": 0.02,
-      "architecture_change": 0.41,
-      "needs_clarification": 0.21,
+      "architecture_change": 0.44,
+      "needs_clarification": 0.22,
       "task_type": "dependency",
       "specialist": "general"
     },
     {
       "id": "off-by-one",
       "change_risk": 1,
-      "security_sensitive": 0.04,
+      "security_sensitive": 0.05,
       "architecture_change": 0.21,
       "needs_clarification": 0.32,
       "task_type": "bugfix",
@@ -76,34 +76,34 @@
     },
     {
       "id": "urgent-copyright",
-      "change_risk": 0.46,
+      "change_risk": 0.47,
       "security_sensitive": 0.02,
       "architecture_change": 0.09,
-      "needs_clarification": 0.72,
+      "needs_clarification": 0.7,
       "task_type": "documentation",
       "specialist": "general"
     },
     {
       "id": "read-timeout",
       "change_risk": 0,
-      "security_sensitive": 0.1,
-      "architecture_change": 0.13,
-      "needs_clarification": 0.16,
+      "security_sensitive": 0.09,
+      "architecture_change": 0.11,
+      "needs_clarification": 0.2,
       "task_type": "unclear",
       "specialist": "general"
     },
     {
       "id": "vague-better",
-      "change_risk": 0.76,
-      "security_sensitive": 0.04,
-      "architecture_change": 0.28,
+      "change_risk": 0.83,
+      "security_sensitive": 0.03,
+      "architecture_change": 0.29,
       "needs_clarification": 0.96,
       "task_type": "unclear",
       "specialist": "general"
     },
     {
       "id": "vague-bug",
-      "change_risk": 0.94,
+      "change_risk": 0.88,
       "security_sensitive": 0.04,
       "architecture_change": 0.2,
       "needs_clarification": 0.96,
@@ -112,7 +112,7 @@
     },
     {
       "id": "vague-perf",
-      "change_risk": 0.94,
+      "change_risk": 0.96,
       "security_sensitive": 0.03,
       "architecture_change": 0.22,
       "needs_clarification": 0.93,
@@ -122,7 +122,7 @@
     {
       "id": "vague-caching",
       "change_risk": 1.03,
-      "security_sensitive": 0.04,
+      "security_sensitive": 0.03,
       "architecture_change": 0.41,
       "needs_clarification": 0.93,
       "task_type": "feature",
@@ -130,37 +130,37 @@
     },
     {
       "id": "vague-cleanup",
-      "change_risk": 0.5,
+      "change_risk": 0.55,
       "security_sensitive": 0.03,
-      "architecture_change": 0.2,
-      "needs_clarification": 0.95,
+      "architecture_change": 0.18,
+      "needs_clarification": 0.94,
       "task_type": "unclear",
       "specialist": "general"
     },
     {
       "id": "drop-users-prod",
       "change_risk": 2,
-      "security_sensitive": 0.85,
-      "architecture_change": 0.9,
-      "needs_clarification": 0.17,
+      "security_sensitive": 0.86,
+      "architecture_change": 0.91,
+      "needs_clarification": 0.18,
       "task_type": "infrastructure",
       "specialist": "security"
     },
     {
       "id": "force-push-main",
-      "change_risk": 1.99,
+      "change_risk": 2,
       "security_sensitive": 0.09,
-      "architecture_change": 0.21,
-      "needs_clarification": 0.43,
+      "architecture_change": 0.22,
+      "needs_clarification": 0.41,
       "task_type": "infrastructure",
       "specialist": "general"
     },
     {
       "id": "delete-s3-prod",
       "change_risk": 2,
-      "security_sensitive": 0.67,
-      "architecture_change": 0.21,
-      "needs_clarification": 0.24,
+      "security_sensitive": 0.71,
+      "architecture_change": 0.19,
+      "needs_clarification": 0.28,
       "task_type": "infrastructure",
       "specialist": "infrastructure"
     },
@@ -168,7 +168,7 @@
       "id": "migrate-prod",
       "change_risk": 2,
       "security_sensitive": 0.77,
-      "architecture_change": 0.76,
+      "architecture_change": 0.78,
       "needs_clarification": 0.43,
       "task_type": "infrastructure",
       "specialist": "infrastructure"
@@ -186,26 +186,26 @@
       "id": "jwt-timing",
       "change_risk": 1.84,
       "security_sensitive": 0.98,
-      "architecture_change": 0.18,
-      "needs_clarification": 0.28,
+      "architecture_change": 0.19,
+      "needs_clarification": 0.27,
       "task_type": "security",
       "specialist": "security"
     },
     {
       "id": "rate-limit-login",
-      "change_risk": 1.88,
+      "change_risk": 1.86,
       "security_sensitive": 0.97,
-      "architecture_change": 0.41,
-      "needs_clarification": 0.55,
+      "architecture_change": 0.42,
+      "needs_clarification": 0.53,
       "task_type": "security",
       "specialist": "security"
     },
     {
       "id": "password-strength",
-      "change_risk": 1.6,
+      "change_risk": 1.57,
       "security_sensitive": 0.96,
-      "architecture_change": 0.42,
-      "needs_clarification": 0.68,
+      "architecture_change": 0.43,
+      "needs_clarification": 0.69,
       "task_type": "feature",
       "specialist": "general"
     },
@@ -214,14 +214,14 @@
       "change_risk": 1.98,
       "security_sensitive": 0.8,
       "architecture_change": 0.96,
-      "needs_clarification": 0.63,
+      "needs_clarification": 0.61,
       "task_type": "refactor",
       "specialist": "architecture"
     },
     {
       "id": "rest-to-graphql",
       "change_risk": 1.63,
-      "security_sensitive": 0.1,
+      "security_sensitive": 0.09,
       "architecture_change": 0.94,
       "needs_clarification": 0.84,
       "task_type": "refactor",
@@ -229,12 +229,21 @@
     },
     {
       "id": "plugin-manifest",
-      "change_risk": 1.03,
+      "change_risk": 1.05,
       "security_sensitive": 0.04,
-      "architecture_change": 0.95,
-      "needs_clarification": 0.75,
+      "architecture_change": 0.96,
+      "needs_clarification": 0.74,
       "task_type": "refactor",
       "specialist": "architecture"
+    },
+    {
+      "id": "category-pagination",
+      "change_risk": 1,
+      "security_sensitive": 0.03,
+      "architecture_change": 0.83,
+      "needs_clarification": 0.43,
+      "task_type": "feature",
+      "specialist": "general"
     }
   ]
 }

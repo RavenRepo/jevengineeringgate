@@ -15,6 +15,7 @@ const { gateRequest } = require("../lib/gate.cjs");
 const { config } = require("../lib/config.cjs");
 
 const MIN_LENGTH = 10;
+const NOTICE = /^\s*(<(task-notification|system-reminder|local-command-[a-z]+|command-[a-z]+)\b|\[SYSTEM NOTIFICATION\b)/;
 const ACK = /^\s*(y|n|yes|no|ok|okay|sure|go|go ahead|continue|proceed|thanks|thank you|ty|nice|great|perfect|do it|stop|wait|nvm|nevermind)\b[\s.!]*$/i;
 
 function emit(context) {
@@ -74,6 +75,9 @@ async function main() {
   if (!prompt || prompt.length < MIN_LENGTH) return emit(null);
   if (prompt.startsWith("/") || prompt.startsWith("!")) return emit(null);
   if (ACK.test(prompt)) return emit(null);
+  // Automated notices (a background task finishing, a system reminder) arrive as
+  // prompts too. They are not a request to route, and judging one is noise.
+  if (NOTICE.test(prompt)) return emit(null);
 
   let out;
   try {

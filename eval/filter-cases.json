@@ -1,0 +1,10 @@
+{
+  "notes": "Output-filter cases. Each names the goal the command ran for and the lines that must survive it. Recall on mustKeep is the safety number; reduction is the saving. `node eval/filter.cjs` replays them live on each engine across keep thresholds.",
+  "cases": [
+    { "id": "node-test-pass", "file": "node-test-pass.txt", "goal": "Run the test suite and check whether it passes", "mustKeep": ["ℹ pass 239", "ℹ fail 0"] },
+    { "id": "node-test-fail", "file": "node-test-fail.txt", "goal": "Run the test suite and find out why it fails", "mustKeep": ["✖ billing webhook verifies the signature", "signature mismatch at webhooks.ts:212", "'sig_ok'", "ℹ fail 1"] },
+    { "id": "vite-build", "file": "vite-build.txt", "goal": "Build the app for production and check that it succeeds", "mustKeep": ["✓ built in", "You can deploy this build"] },
+    { "id": "npm-install", "file": "npm-install.txt", "goal": "Install the dependencies and find out why the install fails", "mustKeep": ["ERESOLVE unable to resolve dependency tree", "peer react@\"^18.0.0\" from legacy-modal@2.4.1", "1 high severity vulnerability"] },
+    { "id": "server-log", "file": "server-log.txt", "goal": "Read the server log and find out why the billing webhook fails", "mustKeep": ["ERROR webhook handler crashed", "reading \"signature\"", "src/billing/webhooks.ts:212:31"] }
+  ]
+}

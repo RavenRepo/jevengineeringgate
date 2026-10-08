@@ -8,11 +8,15 @@ const { join } = require("node:path");
 const PRE = join(__dirname, "../hooks/jev-pretooluse.cjs");
 const INTAKE = join(__dirname, "../hooks/jev-intake.cjs");
 
+// Tests write to a throwaway log, never the real decision log: a forced
+// 1 ms timeout here once read as fourteen production outages.
+const LOG = join(require("node:os").tmpdir(), `jev-hooks-test-${process.pid}.jsonl`);
+
 function run(script, payload, env = {}) {
   const out = execFileSync("node", [script], {
     input: JSON.stringify(payload),
     encoding: "utf8",
-    env: { ...process.env, ...env },
+    env: { ...process.env, JEV_LOG_FILE: LOG, JEV_TOOL_CACHE_FILE: `${LOG}.cache`, JEV_FILTER_DIR: `${LOG}.filtered`, ...env },
     timeout: 15000,
   });
   return out.trim() ? JSON.parse(out) : null;
@@ -64,6 +68,12 @@ test("PreToolUse asks rather than fails open when the API is down on a destructi
 test("intake skips slash commands, acknowledgements and fragments", () => {
   for (const prompt of ["/plan x", "!ls", "yes", "ok thanks", "hi"]) {
     assert.equal(run(INTAKE, { prompt, cwd: "/tmp" }, { JEV_HOOKS_DISABLE: "0" }), null, prompt);
+  }
+});
+
+test("intake stays silent on automated notices", () => {
+  for (const prompt of ["<task-notification>\n<task-id>a1</task-id>\n<status>completed</status> security review finished", "<system-reminder>\n[SYSTEM NOTIFICATION - NOT USER INPUT] the agent finished", "[SYSTEM NOTIFICATION - NOT USER INPUT] background task done"]) {
+    assert.equal(run(INTAKE, { prompt, cwd: "/tmp" }, { TYPESAFE_API_KEY: "" }), null, prompt.slice(0, 30));
   }
 });
 

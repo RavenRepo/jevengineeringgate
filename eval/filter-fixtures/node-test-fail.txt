@@ -1,0 +1,135 @@
+✔ formats value 0 (3.549023ms)
+✔ formats value 1 (0.128445ms)
+✔ formats value 2 (0.103007ms)
+✔ formats value 3 (0.113387ms)
+✔ formats value 4 (0.115593ms)
+✔ formats value 5 (0.098829ms)
+✔ formats value 6 (0.091103ms)
+✔ formats value 7 (0.077254ms)
+✔ formats value 8 (0.102306ms)
+✔ formats value 9 (0.165773ms)
+✔ formats value 10 (0.120199ms)
+✔ formats value 11 (0.091763ms)
+✔ formats value 12 (0.058696ms)
+✔ formats value 13 (0.053967ms)
+✔ formats value 14 (0.044293ms)
+✔ formats value 15 (0.046585ms)
+✔ formats value 16 (0.063687ms)
+✔ formats value 17 (0.052775ms)
+✔ formats value 18 (0.085698ms)
+✔ formats value 19 (0.061487ms)
+✔ formats value 20 (0.060678ms)
+✔ formats value 21 (0.075213ms)
+✔ formats value 22 (0.077916ms)
+✔ formats value 23 (0.051639ms)
+✔ formats value 24 (0.0545ms)
+✔ formats value 25 (0.070773ms)
+✔ formats value 26 (0.064497ms)
+✔ formats value 27 (0.116608ms)
+✔ formats value 28 (0.050716ms)
+✔ formats value 29 (0.046888ms)
+✔ formats value 30 (0.046001ms)
+✔ formats value 31 (0.093456ms)
+✔ formats value 32 (0.045873ms)
+✔ formats value 33 (0.069992ms)
+✔ formats value 34 (0.05992ms)
+✔ formats value 35 (0.044628ms)
+✔ formats value 36 (0.051431ms)
+✔ formats value 37 (0.040253ms)
+✔ formats value 38 (0.039546ms)
+✔ formats value 39 (0.042429ms)
+✔ formats value 40 (0.039791ms)
+✔ formats value 41 (0.070158ms)
+✔ formats value 42 (0.041958ms)
+✔ formats value 43 (0.066867ms)
+✔ formats value 44 (0.05637ms)
+✔ formats value 45 (0.0446ms)
+✔ formats value 46 (0.041912ms)
+✔ formats value 47 (0.040499ms)
+✔ formats value 48 (0.040247ms)
+✔ formats value 49 (0.039672ms)
+✔ formats value 50 (0.040672ms)
+✔ formats value 51 (0.039552ms)
+✔ formats value 52 (0.043085ms)
+✔ formats value 53 (0.04137ms)
+✔ formats value 54 (0.049997ms)
+✔ formats value 55 (0.068174ms)
+✔ formats value 56 (0.04262ms)
+✔ formats value 57 (0.044026ms)
+✔ formats value 58 (0.045132ms)
+✔ formats value 59 (0.074107ms)
+✖ billing webhook verifies the signature (1.215755ms)
+✔ parses date 0 (0.134531ms)
+✔ parses date 1 (0.049883ms)
+✔ parses date 2 (0.08318ms)
+✔ parses date 3 (0.062857ms)
+✔ parses date 4 (0.068168ms)
+✔ parses date 5 (0.09798ms)
+✔ parses date 6 (0.051011ms)
+✔ parses date 7 (0.039448ms)
+✔ parses date 8 (0.055789ms)
+✔ parses date 9 (0.044793ms)
+✔ parses date 10 (0.044196ms)
+✔ parses date 11 (0.045953ms)
+✔ parses date 12 (0.03692ms)
+✔ parses date 13 (0.036256ms)
+✔ parses date 14 (0.036676ms)
+✔ parses date 15 (0.036546ms)
+✔ parses date 16 (0.035866ms)
+✔ parses date 17 (0.040343ms)
+✔ parses date 18 (0.037303ms)
+✔ parses date 19 (0.038782ms)
+✔ parses date 20 (0.037431ms)
+✔ parses date 21 (0.043404ms)
+✔ parses date 22 (0.783475ms)
+✔ parses date 23 (0.058095ms)
+✔ parses date 24 (0.059203ms)
+✔ parses date 25 (0.040062ms)
+✔ parses date 26 (0.044536ms)
+✔ parses date 27 (0.044984ms)
+✔ parses date 28 (0.046755ms)
+✔ parses date 29 (0.05107ms)
+✔ parses date 30 (0.048808ms)
+✔ parses date 31 (0.046558ms)
+✔ parses date 32 (0.049747ms)
+✔ parses date 33 (0.046797ms)
+✔ parses date 34 (0.047301ms)
+✔ parses date 35 (0.060322ms)
+✔ parses date 36 (0.049872ms)
+✔ parses date 37 (0.048897ms)
+✔ parses date 38 (0.04924ms)
+✔ parses date 39 (0.045884ms)
+ℹ tests 101
+ℹ suites 0
+ℹ pass 100
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 138.947548
+
+✖ failing tests:
+
+test at ../../../repo/test/a.test.mjs:3:1
+✖ billing webhook verifies the signature (1.215755ms)
+  AssertionError [ERR_ASSERTION]: signature mismatch at webhooks.ts:212
+  + actual - expected
+  
+  + 'sig_bad'
+  - 'sig_ok'
+         ^
+  
+      at TestContext.<anonymous> (file:///repo/test/a.test.mjs:3:86)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'sig_bad',
+    expected: 'sig_ok',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

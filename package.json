@@ -9,6 +9,8 @@
     "eval:live": "node eval/run.cjs --live",
     "calibrate:record": "node eval/calibrate.cjs --record",
     "calibrate": "node eval/calibrate.cjs",
+    "eval:filter": "node eval/filter.cjs",
+    "eval:route": "node eval/route-agents.cjs",
     "gate": "node bin/jev-gate.cjs"
   },
   "dependencies": {
@@ -18,7 +20,8 @@
     "jev-gate": "bin/jev-gate.cjs",
     "jev-compact": "bin/jev-compact.cjs",
     "jev-verify": "bin/jev-verify.cjs",
-    "jev-route": "bin/jev-route.cjs"
+    "jev-route": "bin/jev-route.cjs",
+    "jev-filter": "bin/jev-filter.cjs"
   },
   "keywords": [
     "ai-agents",

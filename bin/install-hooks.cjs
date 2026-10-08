@@ -16,6 +16,7 @@ const REPO = join(__dirname, "..");
 const ENTRIES = [
   ["PreToolUse", "jev-pretooluse", { matcher: "*", hooks: [{ type: "command", command: `node ${REPO}/hooks/jev-pretooluse.cjs`, timeout: 10 }] }],
   ["UserPromptSubmit", "jev-intake", { hooks: [{ type: "command", command: `node ${REPO}/hooks/jev-intake.cjs`, timeout: 10 }] }],
+  ["PostToolUse", "jev-posttooluse", { matcher: "Bash", hooks: [{ type: "command", command: `node ${REPO}/hooks/jev-posttooluse.cjs`, timeout: 15 }] }],
 ];
 
 if (!existsSync(SETTINGS)) {

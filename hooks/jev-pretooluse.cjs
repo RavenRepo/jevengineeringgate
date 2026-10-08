@@ -15,10 +15,18 @@
 //   ask   -- Jev sees risk; the human decides
 //   {}    -- no opinion; normal permission flow proceeds untouched
 // Set JEV_TOOL_AUTO_ALLOW=1 to opt into allow-on-clear for speed.
+//
+// One exception: an Agent call Jev routes to a cheaper model is returned with
+// "allow" and the rewritten input, because Claude Code applies `updatedInput`
+// only alongside allow or ask. Spawning a subagent is read-only at this layer
+// (it is on the deterministic allow list), and the subagent's own tool calls
+// still come back through this gate. JEV_ROUTE_AGENTS=0 turns routing off.
 const { classifyTool, cacheKey, cacheGet, cacheSet } = require("../lib/tool-gate.cjs");
 const { decide, loadSDK } = require("../lib/decision-engine.cjs");
 const { DESTRUCTIVE_RE } = require("../lib/gate.cjs");
 const { config } = require("../lib/config.cjs");
+const { routeAgent } = require("../lib/route-agent.cjs");
+const { holdsSecret } = require("../lib/secrets.cjs");
 
 function emit(obj) {
   if (obj) process.stdout.write(JSON.stringify(obj));
@@ -80,6 +88,23 @@ async function main() {
   if (pre.verdict === "deny") {
     return emit(decision("deny", `[jev] ${pre.reason}. This is a deterministic block, not a model judgment. Run it yourself with \`! <command>\` if you intend it.`));
   }
+
+  // L6: route a subagent to a cheaper model, only for a call L0 already allows.
+  if ((toolName === "Agent" || toolName === "Task") && pre.verdict === "allow") {
+    const routed = await routeAgent(toolInput, { transcriptPath: evt.transcript_path, holdsSecret }).catch(() => ({ model: null }));
+    if (routed.model) {
+      return emit({
+        continue: true,
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "allow",
+          permissionDecisionReason: `[jev] subagent routed to ${routed.model}: ${routed.why}`,
+          updatedInput: { ...toolInput, model: routed.model },
+        },
+      });
+    }
+  }
+
   if (pre.verdict === "allow") return emit(PASS(`[jev] ${pre.reason}`));
 
   // L1: cached Jev judgment.

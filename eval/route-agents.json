@@ -1,0 +1,103 @@
+{
+  "notes": "Agent prompts labelled with the cheapest model that does the task well, replayed as from an Opus session. A downgrade below the label is the unsafe error; leaving a call on a stronger model only costs money. A label of inherit means the call must be left untouched.",
+  "cases": [
+    {
+      "id": "find-files",
+      "type": "general-purpose",
+      "prompt": "Find every file under src/ that imports from lib/jev and list their paths.",
+      "label": "haiku"
+    },
+    {
+      "id": "grep-env",
+      "type": "general-purpose",
+      "prompt": "Locate where CLASSIFIER_API_KEY is read in this repository and report the file and line.",
+      "label": "haiku"
+    },
+    {
+      "id": "list-routes",
+      "type": "general-purpose",
+      "prompt": "List the route files in src/routes and the URL each one serves.",
+      "label": "haiku"
+    },
+    {
+      "id": "summarise-readme",
+      "type": "general-purpose",
+      "prompt": "Read README.md and summarise its installation section in five bullet points.",
+      "label": "haiku"
+    },
+    {
+      "id": "docs-lookup",
+      "type": "general-purpose",
+      "prompt": "Look up in the Node.js docs whether node --test supports a --test-name-pattern flag and quote the doc line.",
+      "label": "haiku"
+    },
+    {
+      "id": "write-test",
+      "type": "general-purpose",
+      "prompt": "Write a unit test for parseDate in src/utils/date.ts covering an ISO date, an empty string and an invalid month. Follow the style of the existing tests.",
+      "label": "sonnet"
+    },
+    {
+      "id": "rename-fn",
+      "type": "general-purpose",
+      "prompt": "Rename the function fetchUser to loadUser across src/, update its imports, and run the typecheck.",
+      "label": "sonnet"
+    },
+    {
+      "id": "review-file",
+      "type": "general-purpose",
+      "prompt": "Review src/lib/filter.cjs for off-by-one errors in the line numbers it reports, and list each with a failing input.",
+      "label": "sonnet"
+    },
+    {
+      "id": "update-docs",
+      "type": "general-purpose",
+      "prompt": "Update the README's environment variable table to add LIQUID_API_KEY and LIQUID_DEFAULT_MODEL with their defaults.",
+      "label": "sonnet"
+    },
+    {
+      "id": "debug-flaky",
+      "type": "general-purpose",
+      "prompt": "The checkout e2e test fails about one run in five on CI but never locally. Find the cause and fix it.",
+      "label": "inherit"
+    },
+    {
+      "id": "design-auth",
+      "type": "general-purpose",
+      "prompt": "Design multi-tenant authentication for the app: sessions, row-level security, invitation flow and the migration from the current single-tenant schema. Write the plan.",
+      "label": "inherit"
+    },
+    {
+      "id": "security-audit",
+      "type": "general-purpose",
+      "prompt": "Audit the webhook handlers for signature bypasses, replay attacks and timing leaks, and propose fixes with proof for each.",
+      "label": "inherit"
+    },
+    {
+      "id": "perf-regression",
+      "type": "general-purpose",
+      "prompt": "The dashboard got three times slower after last week's merge. Profile it, find which change caused it and why, and propose the fix.",
+      "label": "inherit"
+    },
+    {
+      "id": "pinned-explore",
+      "type": "Explore",
+      "prompt": "Find every file that imports lib/jev and list their paths.",
+      "label": "inherit",
+      "note": "Explore pins its own model; routing must leave it alone."
+    },
+    {
+      "id": "pinned-writer",
+      "type": "oh-my-claudecode:writer",
+      "prompt": "Update the README environment table to add LIQUID_API_KEY.",
+      "label": "inherit",
+      "note": "Pinned to Haiku; setting Sonnet would be an upgrade."
+    },
+    {
+      "id": "refactor-arch",
+      "type": "general-purpose",
+      "prompt": "Split the monolithic decision engine into a provider interface with Jev and Liquid implementations, keeping every caller working and the tests green.",
+      "label": "inherit"
+    }
+  ]
+}

@@ -45,7 +45,8 @@ git clone https://github.com/RavenRepo/jevengineeringgate.git
 cd jevengineeringgate
 npm install
 echo 'TYPESAFE_API_KEY=your_key_here' > .env   # gitignored
-npm test                                        # 48 offline tests, no key needed
+echo 'LIQUID_API_KEY=your_liquid_key' >> .env  # optional: d1 for the output filter
+npm test                                        # offline tests, no key needed
 ```
 
 Wire the hooks into Claude Code (idempotent, backs up first, preserves existing hooks):
@@ -56,7 +57,7 @@ node bin/install-hooks.cjs        # --remove to reverse
 
 Restart your agent. `JEV_HOOKS_DISABLE=1` is the runtime kill switch.
 
-## The five layers
+## The layers
 
 | Layer | What decides | Cost | Where |
 |---|---|---|---|
@@ -65,6 +66,8 @@ Restart your agent. `JEV_HOOKS_DISABLE=1` is the runtime kill switch.
 | **L2** | Jev, on an incoming task | ~1s | [`hooks/jev-intake.cjs`](hooks/jev-intake.cjs) |
 | **L3** | Jev, on finished work and on routing | ~1s | [`lib/verify.cjs`](lib/verify.cjs) |
 | **L4** | Jev, on what to keep in context | ~1.5s / 25 entries | [`lib/compact.cjs`](lib/compact.cjs) |
+| **L5** | Jev (or Liquid d1), on which lines of a long command output the reader needs | 0 for passing runs; ~1s / 25 blocks | [`hooks/jev-posttooluse.cjs`](hooks/jev-posttooluse.cjs), [`lib/filter.cjs`](lib/filter.cjs) |
+| **L6** | Jev, on which model a subagent needs | ~1s per spawn | [`lib/route-agent.cjs`](lib/route-agent.cjs) |
 
 **L0 is the layer that makes the rest viable.** A decision costs ~1s and a
 session makes hundreds of tool calls. Gate all of them and the session becomes
@@ -78,7 +81,71 @@ jev-gate    --request "add OAuth login"               # 0 proceed, 3 escalate
 jev-route   --request "rename a local variable"       # deterministic|cheap|strong|human
 jev-verify  --artifact-file out.ts --requirements "…" # 0 accept, 3 revise
 jev-compact --goal "…" --file history.json            # relevance filter
+npm test 2>&1 | jev-filter --goal "why the tests fail"  # keep the lines the goal needs
 ```
+
+## Output is a filter, not a summary
+
+The most expensive thing in an agent session is the context the strongest
+model reads, and the longest things it reads are command outputs: a test run,
+a build, an install. Most of those lines are passes and progress. The
+PostToolUse hook hands the agent the lines the command's purpose needs,
+verbatim, and saves the full output to a file it can read for the rest
+(`logs/filtered/`, owner-only, newest 200 kept). Every segment of the command
+line is checked: short output, anything that reads or searches (`cat`, `grep`,
+`ls`, `git diff`, anywhere in the line), and anything it cannot parse pass
+through untouched; any failure keeps everything.
+
+**Secrets are never sent.** A command that prints environment or secrets
+(`env`, `printenv`, `kubectl get secret`, `docker inspect`, `docker compose
+config`, `terraform output`, …) and any output that holds a credential shape
+(AWS, GitHub, OpenAI-style keys, JWTs, private keys, `*_KEY=` assignments) is
+left alone and not sent to an engine. Filter requests are logged as counts, not
+text, and the decision log is owner-only. `VAR=value` prefixes are struck from
+the goal before it is sent.
+
+Cheapest first: error and failure lines, the lines that carry a failure's
+values and place (`Expected`/`Received`, `3 !== 4`, a diff's `+`/`-` lines, a
+code frame, stack and traceback frames), the block right after any of them, and
+the line saying how a command finished are kept without asking; lists of passing tests and repeated blocks
+are dropped without asking; only what is left is scored against the goal, on Jev.
+
+Liquid d1 can score instead (`JEV_FILTER_ENGINE=liquid`) and keeps the same
+lines, but it is not the cheaper engine here: it bills every question as its
+own prompt with the whole state, so on the filter evals it used **3,786 input
+tokens a question against Jev's 380**, about ten times the cost despite
+generating no output.
+
+On `eval/filter-cases.json` (a passing and a failing test run, a Vite build,
+an npm install that fails, a server log with one crash), at the fitted keep
+threshold of 0.5: **14/14 must-keep lines survive on both engines, and about 64%
+of the lines are cut in 3–4 requests.** A jest, a node:test and a 14-frame
+pytest failure keep their values, code frame and traceback even when every
+block is scored 0.1 (`test/filter.test.cjs`). A passing 250-line test run becomes 9
+lines with no model call. Re-run with `npm run eval:filter`.
+
+The question's wording was measured, not guessed: the structured `compare`
+form scored the one failing line of a test run at 0.70 on Jev and 0.18 on d1;
+plain keep criteria with a negative anchor scored it at 0.96 and 1.00.
+
+## Subagents run on the model their task needs
+
+A subagent inherits the session's model, so a file search spawned from an Opus
+session runs on Opus. On an Agent call that names no model, Jev scores how much
+reasoning the task needs; below 0.35 goes to Haiku and below 1.2 to Sonnet, but
+only when Jev's confidence clears the auto threshold (0.85), and only to a
+model below the session's own, read from the transcript (when it cannot be
+read, only Haiku). Only types that inherit the session's model are routed
+(`general-purpose`, `claude`): Explore and plugin agents pin their own, and
+setting a model on them could raise it. Hard tasks, forks and calls that chose a
+model are left alone. On `eval/route-agents.json`, replayed as from an Opus
+session: **15/16 exact, 1 left on the stronger model, 0 unsafe downgrades**
+(`npm run eval:route`). `JEV_ROUTE_AGENTS=0` turns it off.
+
+This is the one place the PreToolUse hook returns `allow`: Claude Code applies
+a rewritten input only with `allow` or `ask`. It is returned only for an Agent
+call the deterministic layer already allows, and the subagent's own tool calls
+still pass through the gate.
 
 ## Thresholds are fitted, not chosen
 
