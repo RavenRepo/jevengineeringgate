@@ -99,15 +99,15 @@ test("unrelated entries make no pairs; shared vocabulary alone can", () => {
 function fakeJudge({ relevance = {}, supersedes = {}, fail = [] } = {}) {
   const calls = [];
   const judge = async ({ state, questions, downstream }) => {
-    calls.push({ downstream, n: Object.keys(questions).length, entries: state.entries.length });
+    calls.push({ downstream, n: Object.keys(questions).length, entries: Object.keys(state.entries).length, keys: Object.keys(state.entries) });
     if (fail.includes(downstream)) return { results: {}, fallback: true };
     const results = {};
     for (const [k, q] of Object.entries(questions)) {
       // Relevance compares the goal with the entry's text; supersession
-      // compares two references into state.entries.
+      // compares two keys of state.entries.
       const noul = downstream === "compaction-filter"
         ? relevance[q.instructions.compare[1]] ?? 0.9
-        : supersedes[q.instructions.compare.map((ref) => state.entries[ref.match(/\[(\d+)\]/)[1]]).join(" => ")] ?? 0.1;
+        : supersedes[q.instructions.compare.map((ref) => state.entries[ref.match(/entries\.(\w+)/)[1]]).join(" => ")] ?? 0.1;
       results[k] = { noul };
     }
     return { results, fallback: false };
@@ -120,7 +120,7 @@ const ids = (list) => list.map((e) => e.id);
 test("a later entry that supersedes an older one drops it, and says which", async () => {
   const entries = ["Status #5: pending review", "Rule: never deploy on Fridays", "Status #5: merged"];
   const { judge, calls } = fakeJudge({ supersedes: { "Status #5: pending review => Status #5: merged": 0.95 } });
-  const res = await filterEntries({ goal: "ship #5", entries, judge, order: "chronological" });
+  const res = await filterEntries({ goal: "ship #5", entries, judge, order: "chronological", allPairsUpTo: 0 });
   assert.deepEqual(ids(res.kept), ["1", "2"]);
   assert.equal(res.dropped.length, 1);
   assert.deepEqual({ ...res.dropped[0], p: undefined }, { id: "0", text: entries[0], p: undefined, failed: false, reason: "superseded", supersededBy: "2", ps: 0.95 });
@@ -130,6 +130,7 @@ test("a later entry that supersedes an older one drops it, and says which", asyn
   assert.equal(res.stats.requests, 1, "requests stays the relevance count");
   const pairCall = calls.find((c) => c.downstream === "compaction-supersede");
   assert.equal(pairCall.entries, 2, "a supersession request holds only its chunk's texts");
+  assert.ok(pairCall.keys.every((k) => /^e[0-9a-f]{5}$/.test(k)), "keyed by hash, not by position");
 });
 
 test("supersession is transitive: i -> j -> k drops i and j when k survives", async () => {
@@ -218,7 +219,7 @@ test("unordered pairs are listed once and asked in both directions", async () =>
   const entries = ["Status #5: merged", "Rule: never deploy on Fridays", "Status #5: pending review"];
   assert.deepEqual(candidatePairs(entries, { order: "unordered" }).map((p) => [p.i, p.j, p.both]), [[0, 2, true]]);
   const { judge, calls } = fakeJudge({ supersedes: { "Status #5: pending review => Status #5: merged": 0.9 } });
-  const res = await filterEntries({ goal: "ship #5", entries, judge });
+  const res = await filterEntries({ goal: "ship #5", entries, judge, allPairsUpTo: 0 });
   assert.equal(res.stats.order, "unordered", "no meta.ts: unordered by default");
   assert.deepEqual(ids(res.kept), ["0", "1"], "the newer entry listed first replaces the older one below it");
   assert.deepEqual(res.dropped.map((e) => [e.id, e.supersededBy, e.ps, e.psReverse]), [["2", "0", 0.9, 0.1]]);
@@ -278,4 +279,24 @@ test("unordered: a pinned entry is still asked about, never dropped, and can rep
   assert.equal(res.stats.pairsJudged, 1);
   const last = fakeJudge({ supersedes: { "Status #5: pending => Status #5: merged": 0.9 } });
   assert.deepEqual(ids((await filterEntries({ goal: "g", entries, judge: last.judge, order: "unordered", pinLast: 1 })).kept), ["1"]);
+});
+
+test("up to allPairsUpTo entries every pair is asked about, within maxPairs", async () => {
+  const entries = ["Status #5: merged", "lunch was pasta", "Rule: never deploy on Fridays", "Status #5: pending review"];
+  assert.equal(candidatePairs(entries, { order: "unordered" }).length, 1, "candidatePairs alone uses anchors");
+  assert.equal(candidatePairs(entries, { order: "unordered", allPairsUpTo: 60 }).length, 6);
+  assert.equal(candidatePairs(entries, { order: "chronological", allPairsUpTo: 60 }).length, 6);
+  assert.ok(candidatePairs(entries, { order: "unordered", allPairsUpTo: 60 }).every((p) => p.both && p.i < p.j));
+  assert.equal(candidatePairs(entries, { order: "unordered", allPairsUpTo: 3 }).length, 1, "more entries than allPairsUpTo: anchors");
+  assert.equal(candidatePairs(entries, { order: "unordered", allPairsUpTo: 60, maxPairs: 5 }).length, 1, "every pair would pass maxPairs: anchors");
+
+  const { judge, calls } = fakeJudge({ supersedes: { "Status #5: pending review => Status #5: merged": 0.9 } });
+  const res = await filterEntries({ goal: "g", entries, judge });
+  assert.equal(res.stats.pairsJudged, 6, "filterEntries asks every pair of a short list by default");
+  assert.equal(res.stats.supersedeRequests, 1);
+  assert.equal(calls.find((c) => c.downstream === "compaction-supersede").n, 12);
+  assert.deepEqual(ids(res.kept), ["0", "1", "2"]);
+
+  const many = Array.from({ length: 61 }, (_, i) => `n${i} is x${i}`);
+  assert.equal(candidatePairs(many, { order: "unordered", allPairsUpTo: 60 }).length, 0, "above 60, unrelated entries make no pairs");
 });

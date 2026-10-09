@@ -43,7 +43,7 @@ async function judge(req) {
       if (res.usage) { s.input += res.usage.input_tokens || 0; s.output += res.usage.output_tokens || 0; }
       if (req.downstream === "compaction-supersede" && !res.fallback) {
         for (const [k, q] of Object.entries(req.questions)) {
-          const [a, b] = q.instructions.compare.map((ref) => req.state.entries[Number(ref.match(/\[(\d+)\]/)[1])]);
+          const [a, b] = q.instructions.compare.map((ref) => req.state.entries[ref.match(/entries\.(\w+)/)[1]]);
           if (res.results[k]) answers.push({ subject: a, by: b, p: Number(res.results[k].noul) });
         }
       }
@@ -60,7 +60,8 @@ async function judge(req) {
   for (const c of cases) {
     const idx = new Map(c.entries.map((e, i) => [e.id, i]));
     const found = new Set();
-    for (const p of candidatePairs(c.entries, { maxPerEntry: 4, ...opts })) {
+    // The same defaults filterEntries uses.
+    for (const p of candidatePairs(c.entries, { maxPerEntry: 4, allPairsUpTo: 60, maxPairs: 2000, ...opts })) {
       found.add(`${p.i}>${p.j}`);
       if (p.both) found.add(`${p.j}>${p.i}`);
     }
