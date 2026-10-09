@@ -77,10 +77,11 @@ function fakeJudge({ relevance = {}, supersedes = {}, fail = [] } = {}) {
     if (fail.includes(downstream)) return { results: {}, fallback: true };
     const results = {};
     for (const [k, q] of Object.entries(questions)) {
-      const [a, b] = q.instructions.compare.map((ref) => ref.match(/\[(\d+)\]/)?.[1]);
+      // Relevance compares the goal with the entry's text; supersession
+      // compares two references into state.entries.
       const noul = downstream === "compaction-filter"
-        ? relevance[state.entries[b]] ?? 0.9
-        : supersedes[`${state.entries[a]} => ${state.entries[b]}`] ?? 0.1;
+        ? relevance[q.instructions.compare[1]] ?? 0.9
+        : supersedes[q.instructions.compare.map((ref) => state.entries[ref.match(/\[(\d+)\]/)[1]]).join(" => ")] ?? 0.1;
       results[k] = { noul };
     }
     return { results, fallback: false };

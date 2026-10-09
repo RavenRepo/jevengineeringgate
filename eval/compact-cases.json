@@ -879,11 +879,11 @@
         },
         {
           "id": "d1",
-          "text": "- **Done:** PR #61 (rate limiter) merged 2026-09-30; limiter config lives in config/limits.yaml."
+          "text": "- **Done:** PR #61 (export storage bucket) merged 2026-09-30; the bucket config lives in config/exports.yaml."
         },
         {
           "id": "d2",
-          "text": "- **Done:** migration 0042 applied in staging and production."
+          "text": "- **Done:** migration 0042 (export_runs table) applied in staging and production."
         },
         {
           "id": "i2",
