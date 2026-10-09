@@ -1,5 +1,5 @@
 {
-  "notes": "Supersession cases for compaction. Synthetic: every project, person, number and id is invented. Entries are in chronological order. mustKeep lists live facts, rules and constraints, including near-duplicates that a later entry does NOT replace (it only adds detail, shares an anchor but is about something else, or restates a rule with an extra constraint). mustDrop lists entries a later entry does replace (a newer status, a reversed decision, a reassigned number, a pending item later done, a corrected fact). Entries in neither list are noise either outcome is fine for. mustKeep recall is the safety number. `node eval/compact.cjs` replays them live across supersede thresholds.",
+  "notes": "Supersession cases for compaction. Synthetic: every project, person, number and id is invented. Entries are in chronological order unless the case has an `order` of newest-first or mixed (notes edited in place). `pairs` lists the true supersessions as [older, newer]. mustKeep lists live facts, rules and constraints, including near-duplicates that a later entry does NOT replace (it only adds detail, shares an anchor but is about something else, or restates a rule with an extra constraint). mustDrop lists entries a later entry does replace (a newer status, a reversed decision, a reassigned number, a pending item later done, a corrected fact). Entries in neither list are noise either outcome is fine for. mustKeep recall is the safety number. `node eval/compact.cjs` replays them live across supersede thresholds.",
   "cases": [
     {
       "id": "status-log",
@@ -67,6 +67,48 @@
         "s2",
         "s3",
         "s4"
+      ],
+      "pairs": [
+        [
+          "s1",
+          "s2"
+        ],
+        [
+          "s1",
+          "s3"
+        ],
+        [
+          "s1",
+          "s4"
+        ],
+        [
+          "s1",
+          "s5"
+        ],
+        [
+          "s2",
+          "s3"
+        ],
+        [
+          "s2",
+          "s4"
+        ],
+        [
+          "s2",
+          "s5"
+        ],
+        [
+          "s3",
+          "s4"
+        ],
+        [
+          "s3",
+          "s5"
+        ],
+        [
+          "s4",
+          "s5"
+        ]
       ]
     },
     {
@@ -132,6 +174,24 @@
         "a1",
         "a3",
         "a5"
+      ],
+      "pairs": [
+        [
+          "a1",
+          "a4"
+        ],
+        [
+          "a3",
+          "a5"
+        ],
+        [
+          "a3",
+          "a9"
+        ],
+        [
+          "a5",
+          "a9"
+        ]
       ]
     },
     {
@@ -201,6 +261,32 @@
         "p2",
         "p4",
         "p5"
+      ],
+      "pairs": [
+        [
+          "p1",
+          "p5"
+        ],
+        [
+          "p1",
+          "p6"
+        ],
+        [
+          "p2",
+          "p4"
+        ],
+        [
+          "p2",
+          "p7"
+        ],
+        [
+          "p4",
+          "p7"
+        ],
+        [
+          "p5",
+          "p6"
+        ]
       ]
     },
     {
@@ -260,6 +346,16 @@
       "mustDrop": [
         "d1",
         "q1"
+      ],
+      "pairs": [
+        [
+          "d1",
+          "d2"
+        ],
+        [
+          "q1",
+          "q2"
+        ]
       ]
     },
     {
@@ -314,6 +410,16 @@
       "mustDrop": [
         "f1",
         "f2"
+      ],
+      "pairs": [
+        [
+          "f1",
+          "f4"
+        ],
+        [
+          "f2",
+          "f5"
+        ]
       ]
     },
     {
@@ -369,6 +475,32 @@
         "t2",
         "t4",
         "t6"
+      ],
+      "pairs": [
+        [
+          "t1",
+          "t4"
+        ],
+        [
+          "t1",
+          "t5"
+        ],
+        [
+          "t2",
+          "t6"
+        ],
+        [
+          "t2",
+          "t8"
+        ],
+        [
+          "t4",
+          "t5"
+        ],
+        [
+          "t6",
+          "t8"
+        ]
       ]
     },
     {
@@ -423,6 +555,12 @@
       ],
       "mustDrop": [
         "v1"
+      ],
+      "pairs": [
+        [
+          "v1",
+          "v4"
+        ]
       ]
     },
     {
@@ -488,6 +626,48 @@
         "s3",
         "s4",
         "s7"
+      ],
+      "pairs": [
+        [
+          "s1",
+          "s4"
+        ],
+        [
+          "s1",
+          "s6"
+        ],
+        [
+          "s2",
+          "s3"
+        ],
+        [
+          "s2",
+          "s7"
+        ],
+        [
+          "s2",
+          "s8"
+        ],
+        [
+          "s3",
+          "s7"
+        ],
+        [
+          "s3",
+          "s8"
+        ],
+        [
+          "s3",
+          "s5"
+        ],
+        [
+          "s4",
+          "s6"
+        ],
+        [
+          "s7",
+          "s8"
+        ]
       ]
     },
     {
@@ -542,6 +722,16 @@
       "mustDrop": [
         "c1",
         "c5"
+      ],
+      "pairs": [
+        [
+          "c1",
+          "c4"
+        ],
+        [
+          "c5",
+          "c7"
+        ]
       ]
     },
     {
@@ -635,6 +825,382 @@
         "m7",
         "m10",
         "m13"
+      ],
+      "pairs": [
+        [
+          "m3",
+          "m7"
+        ],
+        [
+          "m3",
+          "m13"
+        ],
+        [
+          "m3",
+          "m15"
+        ],
+        [
+          "m5",
+          "m9"
+        ],
+        [
+          "m7",
+          "m13"
+        ],
+        [
+          "m7",
+          "m15"
+        ],
+        [
+          "m10",
+          "m15"
+        ],
+        [
+          "m13",
+          "m15"
+        ]
+      ]
+    },
+    {
+      "id": "memory-rules",
+      "goal": "Continue the Albatross export work: backfill the September exports under the repo rules",
+      "entries": [
+        {
+          "id": "r1",
+          "text": "- **Rule:** never push to main; every change goes through a PR the maintainer merges."
+        },
+        {
+          "id": "r2",
+          "text": "- **Rule:** agents never print or log values from .env files."
+        },
+        {
+          "id": "i1",
+          "text": "- Repo albatross-core; default branch main; CI is the `check` workflow."
+        },
+        {
+          "id": "d1",
+          "text": "- **Done:** PR #61 (rate limiter) merged 2026-09-30; limiter config lives in config/limits.yaml."
+        },
+        {
+          "id": "d2",
+          "text": "- **Done:** migration 0042 applied in staging and production."
+        },
+        {
+          "id": "i2",
+          "text": "- task_5e19b2 tracks the export rewrite; the data team owns it."
+        },
+        {
+          "id": "x1",
+          "text": "- **Pending:** PR #64 (export rewrite) waiting on review."
+        },
+        {
+          "id": "r3",
+          "text": "- Deploy window: Tuesdays and Thursdays 10:00-12:00 UTC only."
+        },
+        {
+          "id": "x2",
+          "text": "- ADR 0019: reserved for the export file format."
+        },
+        {
+          "id": "x3",
+          "text": "- **Status:** export rewrite blocked on the file format decision."
+        },
+        {
+          "id": "d3",
+          "text": "- ADR 0019 DONE: exports are newline-delimited JSON, gzip, one file per tenant per day."
+        },
+        {
+          "id": "d4",
+          "text": "- **Done:** PR #64 merged as 7d2e90a; the export rewrite is live behind export_v2."
+        },
+        {
+          "id": "s1",
+          "text": "- **Status:** export rewrite shipped; next is the backfill of the September exports."
+        },
+        {
+          "id": "i3",
+          "text": "- Staging admin: https://staging.albatross.example/admin."
+        },
+        {
+          "id": "l1",
+          "text": "- Lesson: the export job needs 4 GB of memory; 2 GB runs out on large tenants."
+        }
+      ],
+      "mustKeep": [
+        "r1",
+        "r2",
+        "i1",
+        "d1",
+        "d2",
+        "i2",
+        "r3",
+        "d3",
+        "d4",
+        "s1",
+        "i3",
+        "l1"
+      ],
+      "mustDrop": [
+        "x1",
+        "x2",
+        "x3"
+      ],
+      "pairs": [
+        [
+          "x1",
+          "d4"
+        ],
+        [
+          "x2",
+          "d3"
+        ],
+        [
+          "x3",
+          "s1"
+        ]
+      ]
+    },
+    {
+      "id": "memory-ops",
+      "goal": "Handle today's Cormorant payments operations safely: ship the checkout follow-ups under the ops rules",
+      "entries": [
+        {
+          "id": "r1",
+          "text": "- **Rule:** production database changes need a second reviewer and a rollback script."
+        },
+        {
+          "id": "r2",
+          "text": "- **Rule:** no deploys while an incident is open."
+        },
+        {
+          "id": "i1",
+          "text": "- Cluster cormorant-prod-eu1, namespace payments; staging is cormorant-stg-eu1."
+        },
+        {
+          "id": "d1",
+          "text": "- **Done:** rotated the payments signing key on 2026-09-12; the old key stops verifying on 2026-10-12."
+        },
+        {
+          "id": "d2",
+          "text": "- **Done:** incident INC-3301 closed; root cause was an expired TLS certificate on the queue broker."
+        },
+        {
+          "id": "i2",
+          "text": "- The certificate expiry alert now fires 21 days ahead (alert_tls_21d)."
+        },
+        {
+          "id": "x1",
+          "text": "- **Open:** INC-3317, latency spike on checkout, investigating."
+        },
+        {
+          "id": "x2",
+          "text": "- **Open:** INC-3317 traced to a missing index on orders(created_at); fix in PR #88."
+        },
+        {
+          "id": "d3",
+          "text": "- **Closed:** INC-3317 resolved by PR #88 (index added); checkout p99 back to 180 ms."
+        },
+        {
+          "id": "i3",
+          "text": "- On-call this week is the payments rota; escalate through the pager."
+        },
+        {
+          "id": "v1",
+          "text": "- Pin queue-client@4.2.1: 4.3.0 drops the TLS session cache."
+        },
+        {
+          "id": "i4",
+          "text": "- Broker restart runbook: docs/runbooks/broker-restart.md."
+        }
+      ],
+      "mustKeep": [
+        "r1",
+        "r2",
+        "i1",
+        "d1",
+        "d2",
+        "i2",
+        "d3",
+        "i3",
+        "v1",
+        "i4"
+      ],
+      "mustDrop": [
+        "x1",
+        "x2"
+      ],
+      "pairs": [
+        [
+          "x1",
+          "x2"
+        ],
+        [
+          "x1",
+          "d3"
+        ],
+        [
+          "x2",
+          "d3"
+        ]
+      ]
+    },
+    {
+      "id": "newest-first-notes",
+      "goal": "Prepare the Puffin v1 sunset notice and keep the v2 facts correct",
+      "order": "newest-first",
+      "entries": [
+        {
+          "id": "s2",
+          "text": "- **Status:** v2 API launched to all tenants; the v1 sunset date is 2027-01-31."
+        },
+        {
+          "id": "s1",
+          "text": "- **Status:** v2 API in beta with three pilot tenants."
+        },
+        {
+          "id": "k1",
+          "text": "- **Decision:** v1 stays read-only after the sunset date; nothing is deleted."
+        },
+        {
+          "id": "a2",
+          "text": "- ADR 0008 DONE: v2 pagination is cursor-based, at most 200 items a page."
+        },
+        {
+          "id": "a1",
+          "text": "- ADR 0008: reserved for v2 pagination."
+        },
+        {
+          "id": "r1",
+          "text": "- **Rule:** a breaking API change needs a deprecation notice 90 days ahead."
+        },
+        {
+          "id": "p2",
+          "text": "- PR #140 merged: cursor pagination for /v2/orders."
+        },
+        {
+          "id": "p1",
+          "text": "- PR #140 open, waiting on API review."
+        },
+        {
+          "id": "f2",
+          "text": "- Correction: the v2 rate limit is 600 requests per minute per tenant; the launch post said 6000 by mistake."
+        },
+        {
+          "id": "f1",
+          "text": "- The v2 rate limit is 6000 requests per minute per tenant."
+        },
+        {
+          "id": "k2",
+          "text": "- Pilot tenants: puffin-pilot-a, puffin-pilot-b, puffin-pilot-c."
+        }
+      ],
+      "mustKeep": [
+        "s2",
+        "k1",
+        "a2",
+        "r1",
+        "p2",
+        "f2",
+        "k2"
+      ],
+      "mustDrop": [
+        "s1",
+        "a1",
+        "p1",
+        "f1"
+      ],
+      "pairs": [
+        [
+          "s1",
+          "s2"
+        ],
+        [
+          "a1",
+          "a2"
+        ],
+        [
+          "p1",
+          "p2"
+        ],
+        [
+          "f1",
+          "f2"
+        ]
+      ]
+    },
+    {
+      "id": "edited-in-place",
+      "goal": "Finish the Shearwater scheduler migration and clean up the old cron entries safely",
+      "order": "mixed",
+      "entries": [
+        {
+          "id": "t2",
+          "text": "- task_3b7c10 (move the cron jobs to the scheduler) done; all 14 jobs run on the scheduler since Monday."
+        },
+        {
+          "id": "r1",
+          "text": "- **Rule:** a job moved to the scheduler keeps its old cron entry commented out for one week."
+        },
+        {
+          "id": "t1",
+          "text": "- task_3b7c10 in progress: 9 of 14 jobs moved."
+        },
+        {
+          "id": "i1",
+          "text": "- Scheduler endpoint scheduler.internal:7443, authenticated by mTLS."
+        },
+        {
+          "id": "k2",
+          "text": "- Decision reversed: retries are handled by the scheduler, not by each job."
+        },
+        {
+          "id": "t3",
+          "text": "- task_4d8e21 (remove the commented cron entries) pending; not before 2026-10-20."
+        },
+        {
+          "id": "k1",
+          "text": "- Decision: each job implements its own retry loop."
+        },
+        {
+          "id": "j2",
+          "text": "- Job nightly_rollup moved to 03:30 UTC to stay out of the backup window."
+        },
+        {
+          "id": "i2",
+          "text": "- Backup window: 02:00-03:00 UTC every night."
+        },
+        {
+          "id": "j1",
+          "text": "- Job nightly_rollup runs at 02:00 UTC."
+        }
+      ],
+      "mustKeep": [
+        "t2",
+        "r1",
+        "i1",
+        "k2",
+        "t3",
+        "j2",
+        "i2"
+      ],
+      "mustDrop": [
+        "t1",
+        "k1",
+        "j1"
+      ],
+      "pairs": [
+        [
+          "t1",
+          "t2"
+        ],
+        [
+          "k1",
+          "k2"
+        ],
+        [
+          "j1",
+          "j2"
+        ]
       ]
     }
   ]
