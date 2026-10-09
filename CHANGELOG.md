@@ -27,6 +27,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the second was written after the default was chosen. The harness reports must-keep recall, catches, candidate recall
   and the highest answer against a must-keep entry.
 
+### Changed
+
+- **`filterEntries` and `jev-compact` now run supersession by default.**
+  Existing callers get a second pass: more requests (on the 14 eval cases, 19
+  supersession requests on top of 14 for relevance) and entries that may now
+  be dropped as superseded. Entries without `meta.ts` are judged unordered.
+  Pass `supersede: false` or `--no-supersede` for the old behaviour.
+- **The relevance pass costs more input tokens.** Each question now carries
+  its entry's text, while the chunk's entries stay in the state: about 194
+  input tokens a question, from about 156 (measured on the eval).
+
 ### Fixed
 
 - **The compaction relevance pass dropped done items.** Its question said to
