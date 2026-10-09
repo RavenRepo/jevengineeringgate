@@ -364,3 +364,15 @@ test("NaN answers keep everything, and a threshold below 0.5 or NaN is refused",
     await assert.rejects(() => filterEntries({ goal: "g", entries, judge, supersedeThreshold: t }), /at least 0.5/, String(t));
   }
 });
+
+test("entries sharing an id each come out exactly once, by position", async () => {
+  const entries = [{ id: "a", text: "Status #5: pending" }, { id: "a", text: "lunch was pasta" }, { id: "b", text: "Status #5: merged" }];
+  for (const supersede of [false, true]) {
+    const { judge } = fakeJudge({ relevance: { "lunch was pasta": 0.1 }, supersedes: { "Status #5: pending => Status #5: merged": 0.9 } });
+    const res = await filterEntries({ goal: "g", entries, judge, supersede });
+    const out = [...res.kept, ...res.dropped].map((e) => e.text).sort();
+    assert.deepEqual(out, entries.map((e) => e.text).sort(), `supersede ${supersede}`);
+    assert.deepEqual(res.dropped.find((e) => e.text === "lunch was pasta").reason, "irrelevant");
+    assert.equal(res.kept.find((e) => e.text === "Status #5: pending") === undefined, supersede);
+  }
+});
