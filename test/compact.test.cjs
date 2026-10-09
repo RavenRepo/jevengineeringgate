@@ -301,3 +301,36 @@ test("up to allPairsUpTo entries every pair is asked about, within maxPairs", as
   const many = Array.from({ length: 61 }, (_, i) => `n${i} is x${i}`);
   assert.equal(candidatePairs(many, { order: "unordered", allPairsUpTo: 60 }).length, 0, "above 60, unrelated entries make no pairs");
 });
+
+test("jev-compact passes its flags through and prints what survives, offline", async () => {
+  const { run, options } = require("../bin/jev-compact.cjs");
+  const o = options(["--goal", "g", "--order", "chronological", "--all-pairs-up-to", "30", "--max-pairs", "100", "--supersede-threshold", "0.7"]);
+  assert.deepEqual([o.order, o.allPairsUpTo, o.maxPairs, o.supersedeThreshold], ["chronological", 30, 100, 0.7]);
+  const d = options(["--goal", "g"]);
+  assert.deepEqual([d.order, d.allPairsUpTo, d.maxPairs, d.supersede], [undefined, 0, 2000, true]);
+  assert.throws(() => options(["--goal", "g", "--order", "newest"]), /--order/);
+
+  const input = JSON.stringify(["Status #5: merged", "Rule: never deploy on Fridays", "lunch was pasta", "Status #5: pending review"]);
+  const supersedes = { "Status #5: pending review => Status #5: merged": 0.9 };
+  const lines = [], errs = [];
+  const { judge, calls } = fakeJudge({ supersedes, relevance: { "lunch was pasta": 0.1 } });
+  assert.equal(await run(["--goal", "ship #5"], { input, judge, out: (l) => lines.push(l), err: (l) => errs.push(l) }), 0);
+  assert.deepEqual(lines, ["Status #5: merged", "Rule: never deploy on Fridays"]);
+  assert.match(errs[0], /kept 2\/4 entries \(1 superseded\)/);
+  assert.equal(calls.find((c) => c.downstream === "compaction-supersede").n, 2, "unordered by default: one anchor pair, both ways");
+
+  const all = fakeJudge({ supersedes });
+  const json = [];
+  await run(["--goal", "g", "--json", "--all-pairs-up-to", "10", "--order", "unordered"], { input, judge: all.judge, out: (l) => json.push(l), err: () => {} });
+  assert.equal(JSON.parse(json[0]).stats.pairsJudged, 6, "--all-pairs-up-to asks every pair");
+
+  const off = fakeJudge({ supersedes });
+  const kept = [];
+  await run(["--goal", "g", "--no-supersede"], { input, judge: off.judge, out: (l) => kept.push(l), err: () => {} });
+  assert.equal(kept.length, 4);
+  assert.ok(off.calls.every((c) => c.downstream === "compaction-filter"));
+
+  const usage = [];
+  assert.equal(await run([], { input, judge, out: () => {}, err: (l) => usage.push(l) }), 2);
+  assert.match(usage[0], /--all-pairs-up-to N\] \[--max-pairs N\]/);
+});
