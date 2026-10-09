@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Supersession in compaction** (`lib/compact.cjs`, `jev-compact`). An entry
+  a later entry has replaced is dropped when its replacement survives. Pairs
+  are found by code (shared anchors or content words, at most four per entry)
+  and judged by Jev, 25 to a request. Dropped entries carry `reason` and
+  `supersededBy`; stats add `superseded`, `pairsJudged`, `supersedeRequests`
+  and `failedSupersedeRequests`, and `requests` is still the relevance count.
+  `--no-supersede` and `--supersede-threshold` on the CLI.
+- **`eval/compact-cases.json` and `npm run eval:compact`.** Ten synthetic
+  sessions; the default threshold of 0.6 is the lowest that keeps all 68
+  must-keep entries, and catches 11 of 32 superseded ones.
+
 ## [1.0.0] - 2026-09-20
 
 First public release.

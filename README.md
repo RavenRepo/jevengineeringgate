@@ -80,7 +80,7 @@ reaches the model.
 jev-gate    --request "add OAuth login"               # 0 proceed, 3 escalate
 jev-route   --request "rename a local variable"       # deterministic|cheap|strong|human
 jev-verify  --artifact-file out.ts --requirements "…" # 0 accept, 3 revise
-jev-compact --goal "…" --file history.json            # relevance filter
+jev-compact --goal "…" --file history.json            # relevance and supersession filter
 npm test 2>&1 | jev-filter --goal "why the tests fail"  # keep the lines the goal needs
 ```
 
@@ -247,8 +247,52 @@ DROPPED  0.14  Ran `ls` in the repo root, saw 14 files
 DROPPED  0.05  Weather is nice today, unrelated aside
 ```
 
+Scoring each entry on its own misses one kind of dead weight: an entry a later
+entry has replaced. An old status line is still on-topic. On 50 real
+orchestration-memory entries, four stale ones (an old "ready for review" line
+after a newer one, "ADR N: reserved for X" left beside "ADR N done") scored
+0.71–0.74, the same as live ones, and nothing was dropped.
+
+So there is a second pass. Code finds the pairs worth asking about, with no
+model call: an older entry and a later one that share an anchor (an issue or
+ADR number, a SHA, a path, a backticked span, a version, an id with a digit,
+the leading label) or enough content words, at most four per entry. Jev is
+asked, pair by pair, whether the later entry makes the older one out of date —
+a newer status, a reversed decision, the item done, a corrected value — and
+told to answer no for different subjects, for a later entry that only adds
+detail, and for an older entry holding a rule, constraint or identifier the
+later one omits. The older entry is dropped as superseded only when the answer
+reaches the threshold, it is not pinned, and its replacement survives the final
+set, directly or through its own replacement. Dropped entries say why
+(`reason: "irrelevant" | "superseded"`, with `supersededBy`).
+
+On `eval/compact-cases.json` (ten synthetic sessions: status logs, ADR number
+allocations, PRs going from pending to merged, a reversed decision, corrected
+facts), at the threshold of 0.6: **68/68 must-keep entries survive, including
+near-duplicates that are not replacements, and 11 of 32 superseded entries are
+caught**, for one extra request per 25 pairs. 0.6 is the lowest threshold that
+kept every must-keep entry; the pairs whose older entry must stay never scored
+above 0.28. Re-run with `npm run eval:compact`.
+
+The question's wording was measured too. The first wording asked whether the
+older entry "adds nothing" the later one does not say; it put 12 of 48 true
+replacements at 0.6 or above, because nearly every old status line says
+something its replacement does not repeat. Asking whether the older entry is
+out of date put 30 there, and held the must-stay pairs lower.
+
+Limits. Entries must be in chronological order, or all carry `meta.ts`: an
+"ADR N done" line filed above "ADR N reserved" cannot replace it. A
+replacement that shares no anchor and few words with the old entry ("Decision:
+use advisory locks", then "Decision reversed: use a unique index") is never
+asked about. A long status line that lists several items is only replaced by a
+line covering all of them. And supersession can only drop an entry whose
+replacement the relevance pass keeps; on the eval, relevance dropping the newer
+entry accounts for most of the misses. On the 50 real entries, the second pass
+dropped nothing.
+
 A failed chunk keeps everything: dropping an entry cannot be undone in-process,
-keeping one only costs tokens.
+keeping one only costs tokens. `--no-supersede` turns the second pass off,
+`--supersede-threshold` moves it.
 
 ## Measured cost
 
