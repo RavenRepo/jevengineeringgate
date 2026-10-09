@@ -61,7 +61,7 @@ async function judge(req) {
     const idx = new Map(c.entries.map((e, i) => [e.id, i]));
     const found = new Set();
     // The same defaults filterEntries uses.
-    for (const p of candidatePairs(c.entries, { maxPerEntry: 4, allPairsUpTo: 60, maxPairs: 2000, ...opts })) {
+    for (const p of candidatePairs(c.entries, { maxPerEntry: 4, allPairsUpTo: 0, maxPairs: 2000, ...opts })) {
       found.add(`${p.i}>${p.j}`);
       if (p.both) found.add(`${p.j}>${p.i}`);
     }

@@ -291,8 +291,9 @@ test("up to allPairsUpTo entries every pair is asked about, within maxPairs", as
   assert.equal(candidatePairs(entries, { order: "unordered", allPairsUpTo: 60, maxPairs: 5 }).length, 1, "every pair would pass maxPairs: anchors");
 
   const { judge, calls } = fakeJudge({ supersedes: { "Status #5: pending review => Status #5: merged": 0.9 } });
-  const res = await filterEntries({ goal: "g", entries, judge });
-  assert.equal(res.stats.pairsJudged, 6, "filterEntries asks every pair of a short list by default");
+  assert.equal((await filterEntries({ goal: "g", entries, judge: fakeJudge().judge })).stats.pairsJudged, 1, "anchor pairs only by default");
+  const res = await filterEntries({ goal: "g", entries, judge, allPairsUpTo: 60 });
+  assert.equal(res.stats.pairsJudged, 6, "allPairsUpTo asks every pair of a short list");
   assert.equal(res.stats.supersedeRequests, 1);
   assert.equal(calls.find((c) => c.downstream === "compaction-supersede").n, 12);
   assert.deepEqual(ids(res.kept), ["0", "1", "2"]);
