@@ -309,6 +309,9 @@ test("jev-compact passes its flags through and prints what survives, offline", a
   const d = options(["--goal", "g"]);
   assert.deepEqual([d.order, d.allPairsUpTo, d.maxPairs, d.supersede], [undefined, 0, 2000, true]);
   assert.throws(() => options(["--goal", "g", "--order", "newest"]), /--order/);
+  for (const bad of [["--supersede-threshold", "0,6"], ["--keep", "--json"], ["--keep", "abc"], ["--pin-first", "two"], ["--pin-last", ""], ["--max-pairs", "Infinity"], ["--all-pairs-up-to", "NaN"], ["--supersede-threshold"]]) {
+    assert.throws(() => options(["--goal", "g", ...bad]), new RegExp(bad[0]), bad.join(" "));
+  }
 
   const input = JSON.stringify(["Status #5: merged", "Rule: never deploy on Fridays", "lunch was pasta", "Status #5: pending review"]);
   const supersedes = { "Status #5: pending review => Status #5: merged": 0.9 };
@@ -333,4 +336,31 @@ test("jev-compact passes its flags through and prints what survives, offline", a
   const usage = [];
   assert.equal(await run([], { input, judge, out: () => {}, err: (l) => usage.push(l) }), 2);
   assert.match(usage[0], /--all-pairs-up-to N\] \[--max-pairs N\]/);
+});
+
+test("a bad numeric flag prints the usage and exits 2 without asking anything", async () => {
+  const { run } = require("../bin/jev-compact.cjs");
+  const input = JSON.stringify(["Status #5: merged", "Status #5: pending review"]);
+  for (const bad of [["--supersede-threshold", "0,6"], ["--keep", "--json"]]) {
+    const { judge, calls } = fakeJudge();
+    const errs = [];
+    const out = [];
+    assert.equal(await run(["--goal", "g", ...bad], { input, judge, out: (l) => out.push(l), err: (l) => errs.push(l) }), 2, bad.join(" "));
+    assert.match(errs[0], new RegExp(bad[0]));
+    assert.match(errs[1], /^Usage: jev-compact/);
+    assert.deepEqual([out, calls], [[], []]);
+  }
+});
+
+test("NaN answers keep everything, and a threshold below 0.5 or NaN is refused", async () => {
+  const entries = ["Status #5: pending", "Status #5: merged"];
+  const nanJudge = async ({ questions }) => ({ results: Object.fromEntries(Object.keys(questions).map((k) => [k, { noul: NaN }])), fallback: false });
+  for (const order of ["unordered", "chronological"]) {
+    const res = await filterEntries({ goal: "g", entries, judge: nanJudge, order });
+    assert.deepEqual(ids(res.kept), ["0", "1"], order);
+  }
+  const { judge } = fakeJudge({ supersedes: { "Status #5: pending => Status #5: merged": 0.9 } });
+  for (const t of [NaN, 0.49, 0, -1, "0,6"]) {
+    await assert.rejects(() => filterEntries({ goal: "g", entries, judge, supersedeThreshold: t }), /at least 0.5/, String(t));
+  }
 });
