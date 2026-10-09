@@ -389,3 +389,18 @@ test("a relevance answer that is not a number counts as failed and keeps the ent
     assert.equal(res.stats.failedChunks, 1, String(bad));
   }
 });
+
+test("an entry longer than MAX_ENTRY_CHARS is never dropped as superseded, but can supersede", async () => {
+  const long = `Status #5: pending review. ${"detail ".repeat(200)}`;
+  assert.ok(long.length > 1200);
+  const short = "Status #5: merged";
+  const cut = long.slice(0, 1200);
+  for (const order of ["unordered", "chronological"]) {
+    const { judge } = fakeJudge({ supersedes: { [`${cut} => ${short}`]: 0.95 } });
+    const res = await filterEntries({ goal: "g", entries: [long, short], judge, order });
+    assert.deepEqual(ids(res.kept), ["0", "1"], `${order}: the long entry stays`);
+  }
+  const { judge } = fakeJudge({ supersedes: { [`Status #5: pending => ${cut}`]: 0.95 } });
+  const res = await filterEntries({ goal: "g", entries: ["Status #5: pending", long], judge, order: "chronological" });
+  assert.deepEqual(res.dropped.map((e) => [e.id, e.supersededBy]), [["0", "1"]], "a long entry can still replace a short one");
+});

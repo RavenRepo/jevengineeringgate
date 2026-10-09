@@ -305,7 +305,9 @@ pass. Only 3 of its 6 true pairs share an anchor.
 Limits. An entry that holds anything its replacement does not repeat stays,
 by design: a long status line that lists several items is only replaced by
 one covering all of them. An entry is only dropped as superseded when the
-relevance pass keeps its replacement. On 50 real memory entries the pass
+relevance pass keeps its replacement. An entry longer than 1,200 characters is
+never dropped as superseded: the model sees only its first 1,200, so it cannot
+judge the rest out of date. It can still replace a shorter one. On 50 real memory entries the pass
 dropped nothing.
 
 ### What it cannot catch
