@@ -271,6 +271,14 @@ replacement must survive the final set, directly or through its own
 replacement. Dropped entries say why (`reason: "irrelevant" | "superseded"`,
 with `supersededBy`, `ps` and, unordered, `psReverse`).
 
+The clean number first. On `eval/compact-cases-holdout-2.json`, four synthetic
+cases written after every setting was fixed and run without tuning, **26/26
+must-keep entries survived; supersession caught 1–2 of the 6 superseded
+entries in two runs, and the relevance pass dropped 3 more.** Six must-drop
+entries are too few to bound the catch rate; read it as "it catches some",
+and the must-keep number as the one that matters. Only 3 of those 6 pairs
+share an anchor, so most were never asked about.
+
 Measured, not guessed, on `eval/compact-cases.json` (14 synthetic sessions:
 status logs, ADR number allocations, PRs going from pending to merged,
 reversed decisions, corrected facts, memory files, notes with the newest entry
@@ -297,18 +305,16 @@ short list (`allPairsUpTo`, `--all-pairs-up-to`): it reached every true pair
 on the eval (64/64, against 59/64) but added wrong-subject answers, needed a
 threshold of 0.8, and caught 13–15 of 44 there and 5/10 on the held-out set,
 for 88 requests instead of 33 (1,225 pairs and 103 requests on a 50-entry
-memory file). A second held-out set, `eval/compact-cases-holdout-2.json`, was
-written after the choice and run once without tuning: 26/26 kept, 2 of 6
-superseded entries caught by this pass and 3 more dropped by the relevance
-pass. Only 3 of its 6 true pairs share an anchor.
+memory file). The second held-out set, quoted above, was written after the
+choice.
 
 Limits. An entry that holds anything its replacement does not repeat stays,
 by design: a long status line that lists several items is only replaced by
 one covering all of them. An entry is only dropped as superseded when the
 relevance pass keeps its replacement. An entry longer than 1,200 characters is
 never dropped as superseded: the model sees only its first 1,200, so it cannot
-judge the rest out of date. It can still replace a shorter one. On 50 real memory entries the pass
-dropped nothing.
+judge the rest out of date. It can still replace a shorter one. On 50 real
+memory entries the pass dropped nothing.
 
 ### What it cannot catch
 
@@ -320,8 +326,8 @@ replacement shares no anchor and few words with it ("Decision: X", then
 carry a date (`meta.ts`) or say what they replace ("ADR 30 done, replaces the
 reservation", "moved to #50").
 
-A failed chunk keeps everything: dropping an entry cannot be undone in-process,
-keeping one only costs tokens. `--no-supersede` turns the second pass off,
+A failed request keeps everything it asked about: dropping an entry cannot be
+undone in-process, keeping one only costs tokens. `--no-supersede` turns the second pass off,
 `--supersede-threshold` moves it, `--order chronological` trusts list order,
 `--all-pairs-up-to N` asks every pair of up to N entries (within `--max-pairs`).
 
