@@ -7,7 +7,7 @@ const assert = require("node:assert/strict");
 const { anchors, candidatePairs, filterEntries } = require("../lib/compact.cjs");
 
 test("anchors name the things an entry is about, normalised so references match", () => {
-  assert.deepEqual(anchors("ADR 0030: reserved for the cache layer"), ["adr:30", "label:adr 0030"]);
+  assert.deepEqual(anchors("ADR 0030: reserved for the cache layer"), ["adr:30", "label:adr 0030", "lead:adr", "lead:adr 0030", "lead:adr 0030 reserved", "num:30"]);
   assert.ok(anchors("ADR-30 decided").includes("adr:30"));
   assert.ok(anchors("see adr30").includes("adr:30"));
   const pr = anchors("Waiting on PR 41 and pull/42, then #43");
@@ -25,10 +25,34 @@ test("anchors name the things an entry is about, normalised so references match"
   assert.deepEqual(anchors("the weather is nice today"), []);
 });
 
+test("list markers are ignored, and ids, dates, versions and leading keywords are anchors", () => {
+  for (const marker of ["- ", "* ", "1. ", "  - "]) {
+    assert.ok(anchors(`${marker}**Status:** all green`).includes("label:status"), marker);
+    assert.ok(anchors(`${marker}Status: all green`).includes("label:status"), marker);
+  }
+  const bare = anchors("accept 0027/0030 and migration 0042 on 2026-10-09");
+  for (const a of ["num:27", "num:30", "num:42", "date:2026-10-09"]) assert.ok(bare.includes(a), a);
+  assert.ok(anchors("ADR 0027 accepted").includes("num:27"), "an ADR number meets its bare form");
+  assert.ok(!anchors("took 214 ms, 500 users, in 2026").some((a) => a.startsWith("num:")), "plain counts and years are not ids");
+  const pkg = anchors("pin queue-client@4.2.1 and @scope/tool@2.0.0, merged @60d0183");
+  for (const a of ["pkg:queue-client@4.2.1", "pkg:@scope/tool@2.0.0", "sha:60d0183"]) assert.ok(pkg.includes(a), a);
+  assert.ok(anchors("- STATUS end of day: all green").includes("lead:status"));
+  const ready = anchors("READY for review: #49");
+  for (const a of ["lead:ready", "lead:ready for", "lead:ready for review"]) assert.ok(ready.includes(a), a);
+  assert.ok(anchors("**Pending docs items:** a, b").includes("lead:pending docs items"));
+  assert.ok(!anchors("Ready for review").some((a) => a.startsWith("lead:")), "an ordinary capital is not a keyword run");
+});
+
+test("slash words are not paths; real paths are", () => {
+  assert.ok(!anchors("yes and/or no, pending/merged").some((a) => a.startsWith("path:")));
+  const paths = anchors("see docs/adr/0030-y.md, ./run.sh, ~/notes and src/a/b");
+  for (const a of ["path:docs/adr/0030-y.md", "path:./run.sh", "path:~/notes", "path:src/a/b"]) assert.ok(paths.includes(a), a);
+});
+
 test("candidate pairs run from an older entry to a later one only", () => {
   const pairs = candidatePairs(["ADR 0030: reserved for the cache", "unrelated chatter about lunch", "ADR 30 done: cache uses LRU"], { order: "chronological" });
   assert.deepEqual(pairs.map((p) => [p.i, p.j]), [[0, 2]]);
-  assert.deepEqual(pairs[0].shared, ["adr:30"]);
+  assert.deepEqual(pairs[0].shared, ["adr:30", "lead:adr", "num:30"]);
 });
 
 test("meta.ts sets the order when every entry has one", () => {
