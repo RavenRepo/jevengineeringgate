@@ -1,0 +1,291 @@
+{
+  "notes": "Held-out supersession cases, written after the supersede threshold and the question wordings were frozen, and never used to tune them. Same shape as compact-cases.json; synthetic throughout. `node eval/compact.cjs --cases eval/compact-cases-holdout.json`.",
+  "cases": [
+    {
+      "id": "holdout-ops-notes",
+      "goal": "Run this week's Marten database maintenance safely and keep the on-call notes accurate",
+      "entries": [
+        {
+          "id": "h1",
+          "text": "- **Rule:** maintenance only inside the Sunday 01:00-04:00 UTC window, announced 48 hours ahead."
+        },
+        {
+          "id": "h2",
+          "text": "- Replica lag alert threshold corrected to 30 seconds; the runbook said 300 by mistake."
+        },
+        {
+          "id": "h3",
+          "text": "- VACUUM FULL on the events table done Sunday; it took 52 minutes and freed 180 GB."
+        },
+        {
+          "id": "h4",
+          "text": "- Replica lag alert threshold: 300 seconds."
+        },
+        {
+          "id": "h5",
+          "text": "- VACUUM FULL on the events table scheduled for Sunday 01:30 UTC."
+        },
+        {
+          "id": "h6",
+          "text": "- Primary is marten-db-a; failover target is marten-db-b in the second zone."
+        },
+        {
+          "id": "h7",
+          "text": "- **Rule:** never run VACUUM FULL on more than one large table per window."
+        },
+        {
+          "id": "h8",
+          "text": "- Next window: reindex the sessions table; the orders table waits for the window after."
+        },
+        {
+          "id": "h9",
+          "text": "- The backup job runs at 00:30 UTC and must finish before any maintenance starts."
+        },
+        {
+          "id": "h10",
+          "text": "- Paged twice overnight for disk usage on marten-db-b; both cleared on their own."
+        }
+      ],
+      "mustKeep": [
+        "h1",
+        "h2",
+        "h3",
+        "h6",
+        "h7",
+        "h8",
+        "h9"
+      ],
+      "mustDrop": [
+        "h4",
+        "h5"
+      ],
+      "pairs": [
+        [
+          "h4",
+          "h2"
+        ],
+        [
+          "h5",
+          "h3"
+        ]
+      ]
+    },
+    {
+      "id": "holdout-release-train",
+      "goal": "Cut the Ibis 7.4 release candidate and track the blockers to the release",
+      "entries": [
+        {
+          "id": "r1",
+          "text": "Blocker #902: login loop on Safari; owner frontend, fix not started."
+        },
+        {
+          "id": "r2",
+          "text": "Blocker #905: export times out above 50k rows."
+        },
+        {
+          "id": "r3",
+          "text": "Rule: an RC is cut only with zero open blockers and a green nightly build."
+        },
+        {
+          "id": "r4",
+          "text": "Blocker #902 fixed in PR #911, merged; verified on Safari 18."
+        },
+        {
+          "id": "r5",
+          "text": "Nightly build red: flaky upload test."
+        },
+        {
+          "id": "r6",
+          "text": "Blocker #905: export timeout fix needs a streaming writer; estimated two days."
+        },
+        {
+          "id": "r7",
+          "text": "Nightly build green two nights running, after the flaky upload test was quarantined in PR #913."
+        },
+        {
+          "id": "r8",
+          "text": "Release notes draft lives in docs/releases/7.4.md."
+        },
+        {
+          "id": "r9",
+          "text": "Blocker #905 closed: streaming writer merged in PR #918, 200k-row export in 41 seconds."
+        },
+        {
+          "id": "r10",
+          "text": "Decision: 7.4 ships without the new dashboard; it moves to 7.5."
+        },
+        {
+          "id": "r11",
+          "text": "The quarantined upload test must be fixed and un-quarantined before 7.5."
+        }
+      ],
+      "mustKeep": [
+        "r3",
+        "r4",
+        "r7",
+        "r8",
+        "r9",
+        "r10",
+        "r11"
+      ],
+      "mustDrop": [
+        "r1",
+        "r2",
+        "r5",
+        "r6"
+      ],
+      "pairs": [
+        [
+          "r1",
+          "r4"
+        ],
+        [
+          "r2",
+          "r6"
+        ],
+        [
+          "r2",
+          "r9"
+        ],
+        [
+          "r6",
+          "r9"
+        ],
+        [
+          "r5",
+          "r7"
+        ]
+      ]
+    },
+    {
+      "id": "holdout-memory-newest-first",
+      "goal": "Continue the Loon onboarding redesign under the agreed decisions and rules",
+      "entries": [
+        {
+          "id": "m1",
+          "text": "- **Decision (revised):** onboarding has three steps, not five; the team invite step moves to after the first project."
+        },
+        {
+          "id": "m2",
+          "text": "- **Rule:** every onboarding change ships behind onboarding_v3 and is A/B tested for two weeks."
+        },
+        {
+          "id": "m3",
+          "text": "- ADR 0011 DONE: onboarding state lives server-side in onboarding_progress, not in local storage."
+        },
+        {
+          "id": "m4",
+          "text": "- Design review for the three-step flow done; mockups in design/onboarding-v3.fig."
+        },
+        {
+          "id": "m5",
+          "text": "- **Decision:** onboarding has five steps, with the team invite second."
+        },
+        {
+          "id": "m6",
+          "text": "- ADR 0011: reserved for where onboarding state is stored."
+        },
+        {
+          "id": "m7",
+          "text": "- Design review for the three-step flow booked for Thursday."
+        },
+        {
+          "id": "m8",
+          "text": "- Experiment owner: growth team; results reviewed every Monday."
+        },
+        {
+          "id": "m9",
+          "text": "- Copy for step two must stay under 80 characters per line on mobile."
+        }
+      ],
+      "mustKeep": [
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "m8",
+        "m9"
+      ],
+      "mustDrop": [
+        "m5",
+        "m6",
+        "m7"
+      ],
+      "pairs": [
+        [
+          "m5",
+          "m1"
+        ],
+        [
+          "m6",
+          "m3"
+        ],
+        [
+          "m7",
+          "m4"
+        ]
+      ]
+    },
+    {
+      "id": "holdout-near-duplicates",
+      "goal": "Prepare the Egret security review and keep every security rule in force",
+      "entries": [
+        {
+          "id": "n1",
+          "text": "Rule: all admin endpoints require MFA."
+        },
+        {
+          "id": "n2",
+          "text": "Rule: all admin endpoints require MFA, and admin sessions expire after 15 minutes idle."
+        },
+        {
+          "id": "n3",
+          "text": "Secrets are stored in the vault under egret/prod/; never in environment files."
+        },
+        {
+          "id": "n4",
+          "text": "Pen test vendor booked for 2026-11-03; scope is the public API only."
+        },
+        {
+          "id": "n5",
+          "text": "Pen test scope extended: the admin panel is included as well as the public API."
+        },
+        {
+          "id": "n6",
+          "text": "Dependency audit: 3 high findings, all in the image library."
+        },
+        {
+          "id": "n7",
+          "text": "Dependency audit rerun after upgrading the image library to 9.1.2: 0 high findings."
+        },
+        {
+          "id": "n8",
+          "text": "Rule: security findings rated high are fixed within 7 days."
+        },
+        {
+          "id": "n9",
+          "text": "Audit log retention is 400 days, required by the customer contracts."
+        }
+      ],
+      "mustKeep": [
+        "n1",
+        "n2",
+        "n3",
+        "n4",
+        "n5",
+        "n7",
+        "n8",
+        "n9"
+      ],
+      "mustDrop": [
+        "n6"
+      ],
+      "pairs": [
+        [
+          "n6",
+          "n7"
+        ]
+      ]
+    }
+  ]
+}
