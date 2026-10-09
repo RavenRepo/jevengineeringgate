@@ -376,3 +376,16 @@ test("entries sharing an id each come out exactly once, by position", async () =
     assert.equal(res.kept.find((e) => e.text === "Status #5: pending") === undefined, supersede);
   }
 });
+
+test("a relevance answer that is not a number counts as failed and keeps the entry", async () => {
+  const entries = ["Rule: never deploy on Fridays", "lunch was pasta"];
+  for (const bad of [NaN, "x", null, undefined]) {
+    const judge = async ({ questions, downstream }) => ({
+      results: Object.fromEntries(Object.keys(questions).map((k) => [k, { noul: downstream === "compaction-filter" ? bad : 0.1 }])),
+      fallback: false,
+    });
+    const res = await filterEntries({ goal: "g", entries, judge });
+    assert.deepEqual(ids(res.kept), ["0", "1"], String(bad));
+    assert.equal(res.stats.failedChunks, 1, String(bad));
+  }
+});
