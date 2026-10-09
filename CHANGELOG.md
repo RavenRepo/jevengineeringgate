@@ -9,20 +9,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - **Supersession in compaction** (`lib/compact.cjs`, `jev-compact`). An entry
-  another entry has replaced is dropped when its replacement survives. Up to
-  60 entries every pair is judged (`allPairsUpTo`, within `maxPairs` 2000);
-  above that, pairs that share an anchor or content words. Entries without
-  `meta.ts` are unordered (`order`): each pair is judged both ways and one
-  side drops only when the reverse answer is below 0.5. Dropped entries carry
-  `reason`, `supersededBy`, `ps` and `psReverse`; stats add `superseded`,
-  `order`, `pairsJudged`, `supersedeRequests` and `failedSupersedeRequests`,
-  and `requests` is still the relevance count. `--no-supersede`,
-  `--supersede-threshold` and `--order` on the CLI. The default threshold,
-  0.8, is the lowest that kept every must-keep entry over three runs with a
-  margin of 0.1.
-- **`eval/compact-cases.json`, `eval/compact-cases-holdout.json` and
-  `npm run eval:compact`.** 14 synthetic cases with their true pairs, and four
-  held out. The harness reports must-keep recall, catches, candidate recall
+  another entry has replaced is dropped when its replacement survives. Pairs
+  that share an anchor or content words are judged by Jev; `allPairsUpTo`
+  judges every pair of a short list instead, within `maxPairs` (2000).
+  Entries without `meta.ts` are unordered (`order`): each pair is judged both
+  ways and one side drops only when the reverse answer is below 0.5. Dropped
+  entries carry `reason`, `supersededBy`, `ps` and `psReverse`; stats add
+  `superseded`, `order`, `pairsJudged`, `supersedeRequests` and
+  `failedSupersedeRequests`, and `requests` is still the relevance count.
+  `--no-supersede`, `--supersede-threshold`, `--order`, `--all-pairs-up-to`
+  and `--max-pairs` on the CLI. The default threshold, 0.6, kept every
+  must-keep entry from 0.5 up over three eval runs; it was chosen after the
+  first held-out set was seen.
+- **`eval/compact-cases.json`, two held-out sets and `npm run eval:compact`.**
+  14 synthetic cases with their true pairs, and four held out in each of
+  `eval/compact-cases-holdout.json` and `eval/compact-cases-holdout-2.json`;
+  the second was written after the default was chosen. The harness reports must-keep recall, catches, candidate recall
   and the highest answer against a must-keep entry.
 
 ### Fixed

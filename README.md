@@ -65,7 +65,7 @@ Restart your agent. `JEV_HOOKS_DISABLE=1` is the runtime kill switch.
 | **L1** | Jev, on a tool call about to execute | ~1s, cached 6h | [`hooks/jev-pretooluse.cjs`](hooks/jev-pretooluse.cjs) |
 | **L2** | Jev, on an incoming task | ~1s | [`hooks/jev-intake.cjs`](hooks/jev-intake.cjs) |
 | **L3** | Jev, on finished work and on routing | ~1s | [`lib/verify.cjs`](lib/verify.cjs) |
-| **L4** | Jev, on what to keep in context | ~1.5s / 25 entries; supersession ~6s / 50 entries | [`lib/compact.cjs`](lib/compact.cjs) |
+| **L4** | Jev, on what to keep in context | ~1.5s / 25 entries; supersession ~1s / 50 entries | [`lib/compact.cjs`](lib/compact.cjs) |
 | **L5** | Jev (or Liquid d1), on which lines of a long command output the reader needs | 0 for passing runs; ~1s / 25 blocks | [`hooks/jev-posttooluse.cjs`](hooks/jev-posttooluse.cjs), [`lib/filter.cjs`](lib/filter.cjs) |
 | **L6** | Jev, on which model a subagent needs | ~1s per spawn | [`lib/route-agent.cjs`](lib/route-agent.cjs) |
 
@@ -253,15 +253,15 @@ orchestration-memory entries, four stale ones (an old "ready for review" line
 next to a newer one, "ADR N: reserved for X" left beside "ADR N done") scored
 0.71–0.74, the same as live ones, and nothing was dropped.
 
-So there is a second pass. Jev is asked, pair by pair, whether one entry makes
-the other out of date — a newer status, a reversed decision, the item done, a
+So there is a second pass. Code picks the pairs worth asking about, with no
+model call: entries that share an anchor (an issue or ADR number, a SHA, a
+path, a backticked span, a version or `name@version`, an id, a zero-padded
+number, a date, the leading label or keyword run) or enough content words, at
+most four per entry. Jev is asked, pair by pair, whether one entry makes the
+other out of date — a newer status, a reversed decision, the item done, a
 corrected value — and told to answer no for different subjects, for an entry
 that only adds detail, and for an entry holding a rule, constraint or
-identifier the other omits. Up to 60 entries, every pair is asked (at most
-2000). Above that, code picks the pairs with no model call: entries that share
-an anchor (an issue or ADR number, a SHA, a path, a backticked span, a version
-or `name@version`, an id, a zero-padded number, a date, the leading label or
-keyword run) or enough content words, at most four per entry.
+identifier the other omits.
 
 Notes and memory files are edited in place, so list order is not time. Unless
 every entry carries `meta.ts`, entries are treated as unordered: each pair is
@@ -271,10 +271,10 @@ replacement must survive the final set, directly or through its own
 replacement. Dropped entries say why (`reason: "irrelevant" | "superseded"`,
 with `supersededBy`, `ps` and, unordered, `psReverse`).
 
-Three things were measured, not guessed, on `eval/compact-cases.json` (14
-synthetic sessions: status logs, ADR number allocations, PRs going from
-pending to merged, reversed decisions, corrected facts, memory files, notes
-with the newest entry first):
+Measured, not guessed, on `eval/compact-cases.json` (14 synthetic sessions:
+status logs, ADR number allocations, PRs going from pending to merged,
+reversed decisions, corrected facts, memory files, notes with the newest entry
+first):
 
 - The relevance question used to drop entries "superseded, already acted on",
   so a merged PR or a finished task read as noise: 11–14 of 104 must-keep
@@ -285,31 +285,43 @@ with the newest entry first):
 - Supersession texts are keyed by a short hash, not listed: in a list the
   model took the lower index for the older entry, and judged a case's newest
   status line out of date because of an older one.
-- The threshold. At **0.8, 104/104 must-keep entries survive and 13–15 of 44
-  superseded entries are caught**, over three runs. 0.6 lost a must-keep entry
-  in one run (a pending task judged replaced by a different task that
-  finished, at 0.66); 0.8 is the lowest threshold that kept everything in
-  every run with a margin of 0.1. On four held-out cases written after it was
-  frozen: 28/28 kept, 5/10 caught. Re-run with `npm run eval:compact`.
+- The threshold. At **0.6, 104/104 must-keep entries survive and 27–28 of 44
+  superseded entries are caught**, over three runs, for 33 requests across the
+  14 cases. Nothing was lost from 0.5 up; the highest answer against a
+  must-keep entry, with its reverse below 0.5, was 0.31. On four held-out
+  cases: 28/28 kept, 8/10 caught. Re-run with `npm run eval:compact`.
 
-Asking every pair costs. On the 50-entry memory file it is 1,225 pairs, 103
-requests and about 6 seconds, against 2 requests for relevance. On the eval
-it reached every true pair (64/64, against 59/64 for anchors) but caught no
-more, and it is where the different-subject errors came from: asking only
-anchor pairs (`allPairsUpTo: 0`) kept everything from 0.5 up and caught 27–28
-of 44 at 0.6.
+That default was chosen after the held-out results were seen, so the first
+held-out set is not clean for it. The alternative was asking every pair of a
+short list (`allPairsUpTo`, `--all-pairs-up-to`): it reached every true pair
+on the eval (64/64, against 59/64) but added wrong-subject answers, needed a
+threshold of 0.8, and caught 13–15 of 44 there and 5/10 on the held-out set,
+for 88 requests instead of 33 (1,225 pairs and 103 requests on a 50-entry
+memory file). A second held-out set, `eval/compact-cases-holdout-2.json`, was
+written after the choice and run once without tuning: 26/26 kept, 2 of 6
+superseded entries caught by this pass and 3 more dropped by the relevance
+pass. Only 3 of its 6 true pairs share an anchor.
 
 Limits. An entry that holds anything its replacement does not repeat stays,
 by design: a long status line that lists several items is only replaced by
 one covering all of them. An entry is only dropped as superseded when the
-relevance pass keeps its replacement. On the 50 real entries, the second pass at 0.8
-dropped nothing: the stale status line scored 0.68 against its replacement,
-and the only other answer above 0.6 (0.70) was wrong, a correction of one
-fact inside an entry that also held open work.
+relevance pass keeps its replacement. On 50 real memory entries the pass
+dropped nothing.
+
+### What it cannot catch
+
+Supersession only sees what the text says. An item that moved elsewhere — a
+pending list folded into a PR, a task handed to another tracker — is invisible
+unless one of the entries says so. Neither can it replace an entry whose
+replacement shares no anchor and few words with it ("Decision: X", then
+"Decision reversed: Y" under another label). Notes that should compact well
+carry a date (`meta.ts`) or say what they replace ("ADR 30 done, replaces the
+reservation", "moved to #50").
 
 A failed chunk keeps everything: dropping an entry cannot be undone in-process,
 keeping one only costs tokens. `--no-supersede` turns the second pass off,
-`--supersede-threshold` moves it, `--order chronological` trusts list order.
+`--supersede-threshold` moves it, `--order chronological` trusts list order,
+`--all-pairs-up-to N` asks every pair of up to N entries (within `--max-pairs`).
 
 ## Measured cost
 
