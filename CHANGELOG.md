@@ -9,15 +9,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - **Supersession in compaction** (`lib/compact.cjs`, `jev-compact`). An entry
-  a later entry has replaced is dropped when its replacement survives. Pairs
-  are found by code (shared anchors or content words, at most four per entry)
-  and judged by Jev, 25 to a request. Dropped entries carry `reason` and
-  `supersededBy`; stats add `superseded`, `pairsJudged`, `supersedeRequests`
-  and `failedSupersedeRequests`, and `requests` is still the relevance count.
-  `--no-supersede` and `--supersede-threshold` on the CLI.
-- **`eval/compact-cases.json` and `npm run eval:compact`.** Ten synthetic
-  sessions; the default threshold of 0.6 is the lowest that keeps all 68
-  must-keep entries, and catches 11 of 32 superseded ones.
+  another entry has replaced is dropped when its replacement survives. Up to
+  60 entries every pair is judged (`allPairsUpTo`, within `maxPairs` 2000);
+  above that, pairs that share an anchor or content words. Entries without
+  `meta.ts` are unordered (`order`): each pair is judged both ways and one
+  side drops only when the reverse answer is below 0.5. Dropped entries carry
+  `reason`, `supersededBy`, `ps` and `psReverse`; stats add `superseded`,
+  `order`, `pairsJudged`, `supersedeRequests` and `failedSupersedeRequests`,
+  and `requests` is still the relevance count. `--no-supersede`,
+  `--supersede-threshold` and `--order` on the CLI. The default threshold,
+  0.8, is the lowest that kept every must-keep entry over three runs with a
+  margin of 0.1.
+- **`eval/compact-cases.json`, `eval/compact-cases-holdout.json` and
+  `npm run eval:compact`.** 14 synthetic cases with their true pairs, and four
+  held out. The harness reports must-keep recall, catches, candidate recall
+  and the highest answer against a must-keep entry.
+
+### Fixed
+
+- **The compaction relevance pass dropped done items.** Its question said to
+  drop entries "superseded, already acted on", so a merged PR or a finished
+  task scored as noise; it also scored entries late in a request lower. On
+  the eval it lost 11–14 of 104 must-keep entries; now 0.
 
 ## [1.0.0] - 2026-09-20
 

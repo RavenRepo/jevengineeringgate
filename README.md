@@ -65,7 +65,7 @@ Restart your agent. `JEV_HOOKS_DISABLE=1` is the runtime kill switch.
 | **L1** | Jev, on a tool call about to execute | ~1s, cached 6h | [`hooks/jev-pretooluse.cjs`](hooks/jev-pretooluse.cjs) |
 | **L2** | Jev, on an incoming task | ~1s | [`hooks/jev-intake.cjs`](hooks/jev-intake.cjs) |
 | **L3** | Jev, on finished work and on routing | ~1s | [`lib/verify.cjs`](lib/verify.cjs) |
-| **L4** | Jev, on what to keep in context | ~1.5s / 25 entries | [`lib/compact.cjs`](lib/compact.cjs) |
+| **L4** | Jev, on what to keep in context | ~1.5s / 25 entries; supersession ~6s / 50 entries | [`lib/compact.cjs`](lib/compact.cjs) |
 | **L5** | Jev (or Liquid d1), on which lines of a long command output the reader needs | 0 for passing runs; ~1s / 25 blocks | [`hooks/jev-posttooluse.cjs`](hooks/jev-posttooluse.cjs), [`lib/filter.cjs`](lib/filter.cjs) |
 | **L6** | Jev, on which model a subagent needs | ~1s per spawn | [`lib/route-agent.cjs`](lib/route-agent.cjs) |
 
@@ -247,52 +247,69 @@ DROPPED  0.14  Ran `ls` in the repo root, saw 14 files
 DROPPED  0.05  Weather is nice today, unrelated aside
 ```
 
-Scoring each entry on its own misses one kind of dead weight: an entry a later
+Scoring each entry on its own misses one kind of dead weight: an entry another
 entry has replaced. An old status line is still on-topic. On 50 real
 orchestration-memory entries, four stale ones (an old "ready for review" line
-after a newer one, "ADR N: reserved for X" left beside "ADR N done") scored
+next to a newer one, "ADR N: reserved for X" left beside "ADR N done") scored
 0.71–0.74, the same as live ones, and nothing was dropped.
 
-So there is a second pass. Code finds the pairs worth asking about, with no
-model call: an older entry and a later one that share an anchor (an issue or
-ADR number, a SHA, a path, a backticked span, a version, an id with a digit,
-the leading label) or enough content words, at most four per entry. Jev is
-asked, pair by pair, whether the later entry makes the older one out of date —
-a newer status, a reversed decision, the item done, a corrected value — and
-told to answer no for different subjects, for a later entry that only adds
-detail, and for an older entry holding a rule, constraint or identifier the
-later one omits. The older entry is dropped as superseded only when the answer
-reaches the threshold, it is not pinned, and its replacement survives the final
-set, directly or through its own replacement. Dropped entries say why
-(`reason: "irrelevant" | "superseded"`, with `supersededBy`).
+So there is a second pass. Jev is asked, pair by pair, whether one entry makes
+the other out of date — a newer status, a reversed decision, the item done, a
+corrected value — and told to answer no for different subjects, for an entry
+that only adds detail, and for an entry holding a rule, constraint or
+identifier the other omits. Up to 60 entries, every pair is asked (at most
+2000). Above that, code picks the pairs with no model call: entries that share
+an anchor (an issue or ADR number, a SHA, a path, a backticked span, a version
+or `name@version`, an id, a zero-padded number, a date, the leading label or
+keyword run) or enough content words, at most four per entry.
 
-On `eval/compact-cases.json` (ten synthetic sessions: status logs, ADR number
-allocations, PRs going from pending to merged, a reversed decision, corrected
-facts), at the threshold of 0.6: **68/68 must-keep entries survive, including
-near-duplicates that are not replacements, and 11 of 32 superseded entries are
-caught**, for one extra request per 25 pairs. 0.6 is the lowest threshold that
-kept every must-keep entry; the pairs whose older entry must stay never scored
-above 0.28. Re-run with `npm run eval:compact`.
+Notes and memory files are edited in place, so list order is not time. Unless
+every entry carries `meta.ts`, entries are treated as unordered: each pair is
+asked both ways, and one side is dropped only when the other direction answers
+below 0.5; if each says it replaces the other, both stay. The dropped entry's
+replacement must survive the final set, directly or through its own
+replacement. Dropped entries say why (`reason: "irrelevant" | "superseded"`,
+with `supersededBy`, `ps` and, unordered, `psReverse`).
 
-The question's wording was measured too. The first wording asked whether the
-older entry "adds nothing" the later one does not say; it put 12 of 48 true
-replacements at 0.6 or above, because nearly every old status line says
-something its replacement does not repeat. Asking whether the older entry is
-out of date put 30 there, and held the must-stay pairs lower.
+Three things were measured, not guessed, on `eval/compact-cases.json` (14
+synthetic sessions: status logs, ADR number allocations, PRs going from
+pending to merged, reversed decisions, corrected facts, memory files, notes
+with the newest entry first):
 
-Limits. Entries must be in chronological order, or all carry `meta.ts`: an
-"ADR N done" line filed above "ADR N reserved" cannot replace it. A
-replacement that shares no anchor and few words with the old entry ("Decision:
-use advisory locks", then "Decision reversed: use a unique index") is never
-asked about. A long status line that lists several items is only replaced by a
-line covering all of them. And supersession can only drop an entry whose
-replacement the relevance pass keeps; on the eval, relevance dropping the newer
-entry accounts for most of the misses. On the 50 real entries, the second pass
-dropped nothing.
+- The relevance question used to drop entries "superseded, already acted on",
+  so a merged PR or a finished task read as noise: 11–14 of 104 must-keep
+  entries were lost. It now names current status, rules and identifiers as
+  reasons to keep. And it compares the goal with the entry's own text, because
+  entries referenced as `entries[9]` or later scored 0.70 on average against
+  0.86 before them. Now none are lost.
+- Supersession texts are keyed by a short hash, not listed: in a list the
+  model took the lower index for the older entry, and judged a case's newest
+  status line out of date because of an older one.
+- The threshold. At **0.8, 104/104 must-keep entries survive and 13–15 of 44
+  superseded entries are caught**, over three runs. 0.6 lost a must-keep entry
+  in one run (a pending task judged replaced by a different task that
+  finished, at 0.66); 0.8 is the lowest threshold that kept everything in
+  every run with a margin of 0.1. On four held-out cases written after it was
+  frozen: 28/28 kept, 5/10 caught. Re-run with `npm run eval:compact`.
+
+Asking every pair costs. On the 50-entry memory file it is 1,225 pairs, 103
+requests and about 6 seconds, against 2 requests for relevance. On the eval
+it reached every true pair (64/64, against 59/64 for anchors) but caught no
+more, and it is where the different-subject errors came from: asking only
+anchor pairs (`allPairsUpTo: 0`) kept everything from 0.5 up and caught 27–28
+of 44 at 0.6.
+
+Limits. An entry that holds anything its replacement does not repeat stays,
+by design: a long status line that lists several items is only replaced by
+one covering all of them. An entry is only dropped as superseded when the
+relevance pass keeps its replacement. On the 50 real entries, the second pass at 0.8
+dropped nothing: the stale status line scored 0.68 against its replacement,
+and the only other answer above 0.6 (0.70) was wrong, a correction of one
+fact inside an entry that also held open work.
 
 A failed chunk keeps everything: dropping an entry cannot be undone in-process,
 keeping one only costs tokens. `--no-supersede` turns the second pass off,
-`--supersede-threshold` moves it.
+`--supersede-threshold` moves it, `--order chronological` trusts list order.
 
 ## Measured cost
 
