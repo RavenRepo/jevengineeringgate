@@ -26,7 +26,7 @@ test("anchors name the things an entry is about, normalised so references match"
 });
 
 test("candidate pairs run from an older entry to a later one only", () => {
-  const pairs = candidatePairs(["ADR 0030: reserved for the cache", "unrelated chatter about lunch", "ADR 30 done: cache uses LRU"]);
+  const pairs = candidatePairs(["ADR 0030: reserved for the cache", "unrelated chatter about lunch", "ADR 30 done: cache uses LRU"], { order: "chronological" });
   assert.deepEqual(pairs.map((p) => [p.i, p.j]), [[0, 2]]);
   assert.deepEqual(pairs[0].shared, ["adr:30"]);
 });
@@ -36,10 +36,12 @@ test("meta.ts sets the order when every entry has one", () => {
     { id: "a", text: "ADR 30 done: cache uses LRU", meta: { ts: "2026-10-02T00:00:00Z" } },
     { id: "b", text: "ADR 0030: reserved for the cache", meta: { ts: "2026-10-01T00:00:00Z" } },
   ];
-  assert.deepEqual(candidatePairs(entries).map((p) => [p.i, p.j]), [[1, 0]]);
-  // One entry without a timestamp: index order.
+  assert.deepEqual(candidatePairs(entries).map((p) => [p.i, p.j]), [[1, 0]], "meta.ts on every entry: chronological by default");
+  // One entry without a timestamp: index order when asked for chronological,
+  // and unordered by default.
   const partial = [entries[0], { id: "b", text: entries[1].text }];
-  assert.deepEqual(candidatePairs(partial).map((p) => [p.i, p.j]), [[0, 1]]);
+  assert.deepEqual(candidatePairs(partial, { order: "chronological" }).map((p) => [p.i, p.j]), [[0, 1]]);
+  assert.deepEqual(candidatePairs(partial).map((p) => [p.i, p.j, p.both]), [[0, 1, true]]);
 });
 
 test("candidate pairs are capped per entry, best overlap first, then the most recent", () => {
@@ -51,11 +53,11 @@ test("candidate pairs are capped per entry, best overlap first, then the most re
     "Status of #7: merged, src/a.ts shipped",
     "#7 noted once more",
   ];
-  const pairs = candidatePairs(entries, { maxPerEntry: 2 }).filter((p) => p.i === 0);
+  const pairs = candidatePairs(entries, { maxPerEntry: 2, order: "chronological" }).filter((p) => p.i === 0);
   assert.equal(pairs.length, 2);
   assert.equal(pairs[0].j, 4, "the most shared anchors rank first");
   assert.equal(pairs[1].j, 5, "ties go to the most recent");
-  assert.ok(candidatePairs(entries).filter((p) => p.i === 0).length === 4, "the default cap is 4");
+  assert.ok(candidatePairs(entries, { order: "chronological" }).filter((p) => p.i === 0).length === 4, "the default cap is 4");
 });
 
 test("unrelated entries make no pairs; shared vocabulary alone can", () => {
@@ -94,7 +96,7 @@ const ids = (list) => list.map((e) => e.id);
 test("a later entry that supersedes an older one drops it, and says which", async () => {
   const entries = ["Status #5: pending review", "Rule: never deploy on Fridays", "Status #5: merged"];
   const { judge, calls } = fakeJudge({ supersedes: { "Status #5: pending review => Status #5: merged": 0.95 } });
-  const res = await filterEntries({ goal: "ship #5", entries, judge });
+  const res = await filterEntries({ goal: "ship #5", entries, judge, order: "chronological" });
   assert.deepEqual(ids(res.kept), ["1", "2"]);
   assert.equal(res.dropped.length, 1);
   assert.deepEqual({ ...res.dropped[0], p: undefined }, { id: "0", text: entries[0], p: undefined, failed: false, reason: "superseded", supersededBy: "2", ps: 0.95 });
@@ -156,11 +158,11 @@ test("pinned entries are never superseded, but can supersede", async () => {
     "Status #5: in review => Status #5: merged": 0.9,
   };
   const first = fakeJudge({ supersedes });
-  const res = await filterEntries({ goal: "g", entries, judge: first.judge, pinFirst: 1 });
+  const res = await filterEntries({ goal: "g", entries, judge: first.judge, pinFirst: 1, order: "chronological" });
   assert.deepEqual(ids(res.kept), ["0", "2"]);
   assert.equal(res.stats.pairsJudged, 1, "a pinned entry is not asked about as the older one");
   const last = fakeJudge({ supersedes });
-  const res2 = await filterEntries({ goal: "g", entries, judge: last.judge, pinLast: 1 });
+  const res2 = await filterEntries({ goal: "g", entries, judge: last.judge, pinLast: 1, order: "chronological" });
   assert.deepEqual(ids(res2.kept), ["2"], "a pinned later entry supersedes");
 });
 
@@ -186,4 +188,70 @@ test("supersede: false is the relevance filter alone", async () => {
   assert.deepEqual([res.stats.superseded, res.stats.pairsJudged, res.stats.supersedeRequests, res.stats.requests], [0, 0, 0, 1]);
   const on = fakeJudge(opts);
   assert.deepEqual(ids((await filterEntries({ goal: "g", entries, judge: on.judge })).kept), ["2", "3"]);
+});
+
+test("unordered pairs are listed once and asked in both directions", async () => {
+  const entries = ["Status #5: merged", "Rule: never deploy on Fridays", "Status #5: pending review"];
+  assert.deepEqual(candidatePairs(entries, { order: "unordered" }).map((p) => [p.i, p.j, p.both]), [[0, 2, true]]);
+  const { judge, calls } = fakeJudge({ supersedes: { "Status #5: pending review => Status #5: merged": 0.9 } });
+  const res = await filterEntries({ goal: "ship #5", entries, judge });
+  assert.equal(res.stats.order, "unordered", "no meta.ts: unordered by default");
+  assert.deepEqual(ids(res.kept), ["0", "1"], "the newer entry listed first replaces the older one below it");
+  assert.deepEqual(res.dropped.map((e) => [e.id, e.supersededBy, e.ps, e.psReverse]), [["2", "0", 0.9, 0.1]]);
+  assert.equal(res.stats.pairsJudged, 1);
+  assert.equal(calls.find((c) => c.downstream === "compaction-supersede").n, 2, "one pair, two questions");
+});
+
+test("unordered: when each entry says it replaces the other, both stay", async () => {
+  const entries = ["Status #5: merged", "Status #5: pending review"];
+  const { judge } = fakeJudge({
+    supersedes: {
+      "Status #5: pending review => Status #5: merged": 0.9,
+      "Status #5: merged => Status #5: pending review": 0.6,
+    },
+  });
+  const res = await filterEntries({ goal: "g", entries, judge, order: "unordered" });
+  assert.deepEqual(ids(res.kept), ["0", "1"]);
+  const high = fakeJudge({
+    supersedes: {
+      "Status #5: pending review => Status #5: merged": 0.9,
+      "Status #5: merged => Status #5: pending review": 0.49,
+    },
+  });
+  assert.deepEqual(ids((await filterEntries({ goal: "g", entries, judge: high.judge, order: "unordered" })).kept), ["0"], "a reverse answer below 0.5 lets one side go");
+});
+
+test("unordered: transitive, the replacement must survive, and a cycle of three keeps all", async () => {
+  const entries = ["Status #5: merged", "Status #5: in review", "Status #5: pending"];
+  const chain = {
+    "Status #5: pending => Status #5: in review": 0.9,
+    "Status #5: in review => Status #5: merged": 0.9,
+  };
+  const t = fakeJudge({ supersedes: chain });
+  const res = await filterEntries({ goal: "g", entries, judge: t.judge, order: "unordered" });
+  assert.deepEqual(ids(res.kept), ["0"]);
+  assert.deepEqual(res.dropped.map((e) => [e.id, e.supersededBy]), [["1", "0"], ["2", "1"]]);
+
+  const gone = fakeJudge({ supersedes: chain, relevance: { "Status #5: merged": 0.1 } });
+  const res2 = await filterEntries({ goal: "g", entries, judge: gone.judge, order: "unordered" });
+  assert.deepEqual(ids(res2.kept), ["1"], "the top of the chain is irrelevant, so the middle stays and replaces the bottom");
+
+  const cycle = fakeJudge({
+    supersedes: {
+      ...chain,
+      "Status #5: merged => Status #5: pending": 0.9,
+    },
+  });
+  const res3 = await filterEntries({ goal: "g", entries, judge: cycle.judge, order: "unordered" });
+  assert.deepEqual(ids(res3.kept), ["0", "1", "2"]);
+});
+
+test("unordered: a pinned entry is still asked about, never dropped, and can replace", async () => {
+  const entries = ["Status #5: pending", "Status #5: merged"];
+  const { judge } = fakeJudge({ supersedes: { "Status #5: pending => Status #5: merged": 0.9 } });
+  const res = await filterEntries({ goal: "g", entries, judge, order: "unordered", pinFirst: 1 });
+  assert.deepEqual(ids(res.kept), ["0", "1"]);
+  assert.equal(res.stats.pairsJudged, 1);
+  const last = fakeJudge({ supersedes: { "Status #5: pending => Status #5: merged": 0.9 } });
+  assert.deepEqual(ids((await filterEntries({ goal: "g", entries, judge: last.judge, order: "unordered", pinLast: 1 })).kept), ["1"]);
 });

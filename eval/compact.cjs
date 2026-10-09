@@ -109,9 +109,17 @@ async function judge(req) {
   for (const c of cases) for (const e of c.entries) if (c.mustKeep.includes(e.id)) keepTexts.set(e.text.slice(0, 1200), `${c.id}:${e.id}`);
   const idOf = new Map();
   for (const c of cases) for (const e of c.entries) idOf.set(e.text.slice(0, 1200), `${c.id}:${e.id}`);
+  // In unordered mode an answer only counts when the reverse answer is below
+  // 0.5; otherwise the pair is mutual and both stay whatever the threshold.
+  const reverse = new Map(answers.map((a) => [`${a.subject}\u0000${a.by}`, a.p]));
+  const show = (list) => list.slice(0, 3).map((a) => `${idOf.get(a.subject)} by ${idOf.get(a.by).split(":")[1]} ${a.p.toFixed(2)}`).join(", ");
   const mustStay = answers.filter((a) => keepTexts.has(a.subject)).sort((a, b) => b.p - a.p);
+  const effective = mustStay.filter((a) => {
+    const r = reverse.get(`${a.by}\u0000${a.subject}`);
+    return r === undefined || r < 0.5;
+  });
   if (mustStay.length) {
-    console.log(`must-stay ceiling ${mustStay[0].p.toFixed(2)} over ${mustStay.length} answers; highest: ${mustStay.slice(0, 3).map((a) => `${idOf.get(a.subject)} by ${idOf.get(a.by).split(":")[1]} ${a.p.toFixed(2)}`).join(", ")}`);
+    console.log(`must-stay ceiling ${mustStay[0].p.toFixed(2)} over ${mustStay.length} answers (${show(mustStay)}); counting only answers whose reverse is below 0.5: ${effective.length ? `${effective[0].p.toFixed(2)} (${show(effective)})` : "none"}`);
   }
   const safe = rows.filter((r) => r.recall === 1).map((r) => r.t).sort((a, b) => a - b);
   console.log(safe.length ? `lowest threshold with full recall: ${safe[0]}` : "no threshold keeps every must-keep entry");
