@@ -404,3 +404,12 @@ test("an entry longer than MAX_ENTRY_CHARS is never dropped as superseded, but c
   const res = await filterEntries({ goal: "g", entries: ["Status #5: pending", long], judge, order: "chronological" });
   assert.deepEqual(res.dropped.map((e) => [e.id, e.supersededBy]), [["0", "1"]], "a long entry can still replace a short one");
 });
+
+test("stats say when maxPairs cut the candidate pairs", async () => {
+  const entries = ["Status #5: pending", "Status #5: in review", "Status #5: merged"];
+  const full = await filterEntries({ goal: "g", entries, judge: fakeJudge().judge });
+  assert.equal(full.stats.pairsJudged, 3);
+  assert.ok(!("pairsTruncated" in full.stats) && !("pairsCandidates" in full.stats), "no cut, no fields");
+  const cut = await filterEntries({ goal: "g", entries, judge: fakeJudge().judge, maxPairs: 2 });
+  assert.deepEqual([cut.stats.pairsJudged, cut.stats.pairsCandidates, cut.stats.pairsTruncated], [2, 3, 1]);
+});
