@@ -1,0 +1,1207 @@
+{
+  "notes": "Supersession cases for compaction. Synthetic: every project, person, number and id is invented. Entries are in chronological order unless the case has an `order` of newest-first or mixed (notes edited in place). `pairs` lists the true supersessions as [older, newer]. mustKeep lists live facts, rules and constraints, including near-duplicates that a later entry does NOT replace (it only adds detail, shares an anchor but is about something else, or restates a rule with an extra constraint). mustDrop lists entries a later entry does replace (a newer status, a reversed decision, a reassigned number, a pending item later done, a corrected fact). Entries in neither list are noise either outcome is fine for. mustKeep recall is the safety number. `node eval/compact.cjs` replays them live across supersede thresholds.",
+  "cases": [
+    {
+      "id": "status-log",
+      "goal": "Get the Lanternfish 3.2 release out: finish the open review items and ship to production under the release rules",
+      "entries": [
+        {
+          "id": "r1",
+          "text": "Rule: no production deploy without a green staging smoke run in the last 24 hours."
+        },
+        {
+          "id": "s1",
+          "text": "Status: Lanternfish 3.2 branch cut, staging deploy queued."
+        },
+        {
+          "id": "n1",
+          "text": "Ran `git status` in the release worktree, nothing to commit."
+        },
+        {
+          "id": "s2",
+          "text": "Status: staging deploy done, smoke run failing on the checkout flow."
+        },
+        {
+          "id": "f1",
+          "text": "Checkout smoke failure traced to src/checkout/totals.ts: rounding drops the last cent on split payments."
+        },
+        {
+          "id": "s3",
+          "text": "Status: totals fix up as #214, staging smoke run pending."
+        },
+        {
+          "id": "c1",
+          "text": "Constraint: the release notes must mention the totals rounding change because invoices from 3.1 can differ by one cent."
+        },
+        {
+          "id": "s4",
+          "text": "Status: #214 merged, staging smoke run green at 14:10, waiting for release manager sign-off."
+        },
+        {
+          "id": "p1",
+          "text": "The release manager signs off on 3.2 in the release channel thread; no production deploy before that sign-off."
+        },
+        {
+          "id": "s5",
+          "text": "Status: #214 merged, staging smoke run green at 14:10, sign-off received from the release manager; production deploy of 3.2 scheduled for 16:00."
+        },
+        {
+          "id": "d1",
+          "text": "Production deploy uses the blue-green script deploy/bluegreen.sh with the --drain 120 flag."
+        },
+        {
+          "id": "n2",
+          "text": "Lunch order arrived, back in ten minutes."
+        }
+      ],
+      "mustKeep": [
+        "r1",
+        "f1",
+        "c1",
+        "p1",
+        "s5",
+        "d1"
+      ],
+      "mustDrop": [
+        "s1",
+        "s2",
+        "s3",
+        "s4"
+      ],
+      "pairs": [
+        [
+          "s1",
+          "s2"
+        ],
+        [
+          "s1",
+          "s3"
+        ],
+        [
+          "s1",
+          "s4"
+        ],
+        [
+          "s1",
+          "s5"
+        ],
+        [
+          "s2",
+          "s3"
+        ],
+        [
+          "s2",
+          "s4"
+        ],
+        [
+          "s2",
+          "s5"
+        ],
+        [
+          "s3",
+          "s4"
+        ],
+        [
+          "s3",
+          "s5"
+        ],
+        [
+          "s4",
+          "s5"
+        ]
+      ]
+    },
+    {
+      "id": "adr-allocations",
+      "goal": "Write the remaining architecture decision records for the Orchard billing service and keep ADR numbers consistent",
+      "entries": [
+        {
+          "id": "a1",
+          "text": "ADR 0014: reserved for the invoice retry policy."
+        },
+        {
+          "id": "a2",
+          "text": "ADR 0015: reserved for the currency rounding rules."
+        },
+        {
+          "id": "a3",
+          "text": "ADR 0016: reserved for the tax provider adapter."
+        },
+        {
+          "id": "g1",
+          "text": "Rule: every ADR number is allocated by the docs lead before anyone writes the file; never pick the next number yourself."
+        },
+        {
+          "id": "a4",
+          "text": "ADR 0014 DONE: invoice retries use exponential backoff, at most 5 attempts, then the invoice is flagged for manual review."
+        },
+        {
+          "id": "a5",
+          "text": "ADR 0016 reassigned: the tax provider adapter is dropped from scope; 0016 now covers the webhook signature scheme."
+        },
+        {
+          "id": "a6",
+          "text": "ADR 0014 follow-up: the same retry limits apply to refund retries, which were not covered in the original record."
+        },
+        {
+          "id": "a7",
+          "text": "ADR 0017: reserved for the ledger export format."
+        },
+        {
+          "id": "a8",
+          "text": "ADR files live in docs/adr/ and are named NNNN-kebab-title.md."
+        },
+        {
+          "id": "a9",
+          "text": "ADR 0016 DONE: webhooks are signed with HMAC-SHA256 over the raw body, keys rotate every 90 days."
+        },
+        {
+          "id": "a10",
+          "text": "ADR 0014 is linked from the refund service README; that link must be updated if the record file is ever renamed."
+        }
+      ],
+      "mustKeep": [
+        "a2",
+        "g1",
+        "a4",
+        "a6",
+        "a7",
+        "a8",
+        "a9",
+        "a10"
+      ],
+      "mustDrop": [
+        "a1",
+        "a3",
+        "a5"
+      ],
+      "pairs": [
+        [
+          "a1",
+          "a4"
+        ],
+        [
+          "a3",
+          "a5"
+        ],
+        [
+          "a3",
+          "a9"
+        ],
+        [
+          "a5",
+          "a9"
+        ]
+      ]
+    },
+    {
+      "id": "pr-list",
+      "goal": "Get the open pull requests for the Kestrel mobile app merged in order and report what is still blocked",
+      "entries": [
+        {
+          "id": "p1",
+          "text": "PR #301 (offline cache) open, waiting on review from the platform team."
+        },
+        {
+          "id": "p2",
+          "text": "PR #302 (push token refresh) open, CI failing on lint."
+        },
+        {
+          "id": "p3",
+          "text": "PR #303 (settings screen) open, depends on #301."
+        },
+        {
+          "id": "b1",
+          "text": "Bug #88: app crashes on login when the device clock is wrong; reported by QA."
+        },
+        {
+          "id": "p4",
+          "text": "PR #302 CI green after the lint fix."
+        },
+        {
+          "id": "r1",
+          "text": "Merge order rule: #301 before #303, because #303 imports the cache module."
+        },
+        {
+          "id": "p5",
+          "text": "PR #301 approved by the platform team."
+        },
+        {
+          "id": "p6",
+          "text": "PR #301 merged as 4be91c2."
+        },
+        {
+          "id": "b2",
+          "text": "The fix for #88 must not change the auth SDK version; the SDK upgrade is a separate project."
+        },
+        {
+          "id": "p7",
+          "text": "PR #302 approved, waiting for the maintainer to merge."
+        },
+        {
+          "id": "p8",
+          "text": "PR #304 (fix for #88) opened, draft."
+        },
+        {
+          "id": "n1",
+          "text": "Checked the weather for the offsite, rain expected."
+        }
+      ],
+      "mustKeep": [
+        "p3",
+        "b1",
+        "r1",
+        "p6",
+        "b2",
+        "p7",
+        "p8"
+      ],
+      "mustDrop": [
+        "p1",
+        "p2",
+        "p4",
+        "p5"
+      ],
+      "pairs": [
+        [
+          "p1",
+          "p5"
+        ],
+        [
+          "p1",
+          "p6"
+        ],
+        [
+          "p2",
+          "p4"
+        ],
+        [
+          "p2",
+          "p7"
+        ],
+        [
+          "p4",
+          "p7"
+        ],
+        [
+          "p5",
+          "p6"
+        ]
+      ]
+    },
+    {
+      "id": "reversed-decision",
+      "goal": "Implement job deduplication in the Heron worker queue according to the current decisions",
+      "entries": [
+        {
+          "id": "d1",
+          "text": "Decision: deduplicate jobs with Postgres advisory locks keyed by the job hash."
+        },
+        {
+          "id": "c1",
+          "text": "Constraint: deduplication must survive a worker restart mid-job."
+        },
+        {
+          "id": "c2",
+          "text": "Constraint: no new infrastructure; the queue runs on the existing Postgres only."
+        },
+        {
+          "id": "n1",
+          "text": "Read src/queue/worker.ts, 420 lines, the claim loop is at line 112."
+        },
+        {
+          "id": "d2",
+          "text": "Decision reversed: advisory locks are released when a worker dies, which breaks the restart constraint. Deduplicate with a unique index on (queue, job_hash) instead."
+        },
+        {
+          "id": "d3",
+          "text": "Decision: job hashes are SHA-256 of the canonical JSON payload, hex-encoded."
+        },
+        {
+          "id": "q1",
+          "text": "Open question: should a duplicate job return the original job id or a 409? Waiting on the API owner."
+        },
+        {
+          "id": "d4",
+          "text": "Decision: the unique index is partial, WHERE state <> 'done', so a finished job can be enqueued again."
+        },
+        {
+          "id": "q2",
+          "text": "Answer from the API owner: a duplicate returns the original job id with 200, never 409."
+        },
+        {
+          "id": "t1",
+          "text": "Test plan: kill the worker between claim and finish in test/queue/restart.test.ts and assert one execution."
+        }
+      ],
+      "mustKeep": [
+        "c1",
+        "c2",
+        "d2",
+        "d3",
+        "d4",
+        "q2",
+        "t1"
+      ],
+      "mustDrop": [
+        "d1",
+        "q1"
+      ],
+      "pairs": [
+        [
+          "d1",
+          "d2"
+        ],
+        [
+          "q1",
+          "q2"
+        ]
+      ]
+    },
+    {
+      "id": "corrected-facts",
+      "goal": "Run the Wren analytics backfill against staging without breaking the rate limits or the data rules",
+      "entries": [
+        {
+          "id": "f1",
+          "text": "The staging database host is db-stg-02.internal."
+        },
+        {
+          "id": "f2",
+          "text": "The events API rate limit is 100 requests per second per key."
+        },
+        {
+          "id": "r1",
+          "text": "Rule: backfills run with --dry-run first and the diff is posted before a real run."
+        },
+        {
+          "id": "f3",
+          "text": "Backfill script is scripts/backfill_events.py; it reads the date range from BACKFILL_FROM and BACKFILL_TO."
+        },
+        {
+          "id": "f4",
+          "text": "Correction: staging moved to db-stg-03.internal last week; db-stg-02 was retired and refuses connections."
+        },
+        {
+          "id": "r2",
+          "text": "Rule: backfills run with --dry-run first and the diff is posted before a real run, and never during the 02:00-03:00 maintenance window."
+        },
+        {
+          "id": "f5",
+          "text": "Correction: the events API rate limit is 250 requests per second per key, not 100; the docs page was out of date."
+        },
+        {
+          "id": "f6",
+          "text": "Dry run for 2026-08 finished: 1,204,331 events, 0 schema errors."
+        },
+        {
+          "id": "n1",
+          "text": "Opened a new terminal tab."
+        }
+      ],
+      "mustKeep": [
+        "r1",
+        "f3",
+        "f4",
+        "r2",
+        "f5",
+        "f6"
+      ],
+      "mustDrop": [
+        "f1",
+        "f2"
+      ],
+      "pairs": [
+        [
+          "f1",
+          "f4"
+        ],
+        [
+          "f2",
+          "f5"
+        ]
+      ]
+    },
+    {
+      "id": "task-tracker",
+      "goal": "Finish the remaining tasks for the Pipit search migration and report which are open",
+      "entries": [
+        {
+          "id": "t1",
+          "text": "task_7f3a21 (reindex products) pending."
+        },
+        {
+          "id": "t2",
+          "text": "task_8c0d44 (switch read path to the new index) pending, blocked by task_7f3a21."
+        },
+        {
+          "id": "t3",
+          "text": "task_91be07 (delete the old index) pending; must wait one week after the read path switch."
+        },
+        {
+          "id": "t4",
+          "text": "task_7f3a21 running, 40% of products reindexed."
+        },
+        {
+          "id": "g1",
+          "text": "Rule: never delete an index while any service still reads from it; check the read metrics first."
+        },
+        {
+          "id": "t5",
+          "text": "task_7f3a21 done: 2.4M products reindexed, spot check of 200 matched."
+        },
+        {
+          "id": "t6",
+          "text": "task_8c0d44 in progress, read path behind the flag search_v2_reads."
+        },
+        {
+          "id": "t7",
+          "text": "task_a2c519 (synonym list import) added, pending, owned by the search team."
+        },
+        {
+          "id": "t8",
+          "text": "task_8c0d44 done: search_v2_reads at 100% since Tuesday."
+        }
+      ],
+      "mustKeep": [
+        "t3",
+        "g1",
+        "t5",
+        "t7",
+        "t8"
+      ],
+      "mustDrop": [
+        "t1",
+        "t2",
+        "t4",
+        "t6"
+      ],
+      "pairs": [
+        [
+          "t1",
+          "t4"
+        ],
+        [
+          "t1",
+          "t5"
+        ],
+        [
+          "t2",
+          "t6"
+        ],
+        [
+          "t2",
+          "t8"
+        ],
+        [
+          "t4",
+          "t5"
+        ],
+        [
+          "t6",
+          "t8"
+        ]
+      ]
+    },
+    {
+      "id": "version-pins",
+      "goal": "Upgrade the Plover build toolchain dependencies and keep the build reproducible",
+      "entries": [
+        {
+          "id": "v1",
+          "text": "Pin the parser package to v2.3.1: v2.4.0 breaks streaming input."
+        },
+        {
+          "id": "v2",
+          "text": "Node is pinned to 20.11.1 in .nvmrc and in the CI image."
+        },
+        {
+          "id": "v3",
+          "text": "Bundler pinned to 5.88.2 because 5.89.0 changed the chunk hash and broke the CDN cache."
+        },
+        {
+          "id": "r1",
+          "text": "Rule: every version change updates the lockfile in the same commit, and package-lock.json is never edited by hand."
+        },
+        {
+          "id": "v4",
+          "text": "Upgraded the parser to v2.5.0: the streaming bug was fixed upstream in 2.5.0, tests pass."
+        },
+        {
+          "id": "v5",
+          "text": "Node upgrade to 22.9.0 tried and reverted: a native module fails to build. Node stays on 20.11.1."
+        },
+        {
+          "id": "v6",
+          "text": "Bundler 5.88.2 pin confirmed still needed; the chunk hash change is intended upstream."
+        },
+        {
+          "id": "n1",
+          "text": "npm install took 41 seconds."
+        },
+        {
+          "id": "v7",
+          "text": "Linter upgraded from 8.57.0 to 9.3.0; the config moved to eslint.config.js."
+        }
+      ],
+      "mustKeep": [
+        "v2",
+        "v3",
+        "r1",
+        "v4",
+        "v5",
+        "v6",
+        "v7"
+      ],
+      "mustDrop": [
+        "v1"
+      ],
+      "pairs": [
+        [
+          "v1",
+          "v4"
+        ]
+      ]
+    },
+    {
+      "id": "agent-dispatch",
+      "goal": "Coordinate the agents on the Sparrow rewrite: dispatch the remaining steps safely and track what each agent is doing",
+      "entries": [
+        {
+          "id": "g1",
+          "text": "Rule: an agent gets one step at a time and never merges its own PR; merges go to the maintainer."
+        },
+        {
+          "id": "g2",
+          "text": "Rule: steps 3a-3c touch the same schema file and must run one after another, never in parallel."
+        },
+        {
+          "id": "s1",
+          "text": "Agent echo-2 dispatched on step 3a (schema for accounts)."
+        },
+        {
+          "id": "s2",
+          "text": "Agent fox-1 dispatched on step 2d (docs for the importer)."
+        },
+        {
+          "id": "s3",
+          "text": "Agent fox-1 finished step 2d, PR #57 opened."
+        },
+        {
+          "id": "s4",
+          "text": "Agent echo-2 still on step 3a, schema tests failing on a nullable column."
+        },
+        {
+          "id": "s5",
+          "text": "PR #57 (step 2d, importer docs) merged by the maintainer."
+        },
+        {
+          "id": "s6",
+          "text": "Agent echo-2 finished step 3a, PR #58 opened; step 3b can start after #58 merges."
+        },
+        {
+          "id": "s7",
+          "text": "Agent fox-1 idle, available for the next step."
+        },
+        {
+          "id": "k1",
+          "text": "Agent echo-2 reported that the importer docs from step 2d are missing the CSV delimiter option; logged as #59 for later."
+        },
+        {
+          "id": "s8",
+          "text": "Agent fox-1 dispatched on step 4a (CLI flags), which does not touch the schema."
+        }
+      ],
+      "mustKeep": [
+        "g1",
+        "g2",
+        "s5",
+        "s6",
+        "k1",
+        "s8"
+      ],
+      "mustDrop": [
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s7"
+      ],
+      "pairs": [
+        [
+          "s1",
+          "s4"
+        ],
+        [
+          "s1",
+          "s6"
+        ],
+        [
+          "s2",
+          "s3"
+        ],
+        [
+          "s2",
+          "s7"
+        ],
+        [
+          "s2",
+          "s8"
+        ],
+        [
+          "s3",
+          "s7"
+        ],
+        [
+          "s3",
+          "s8"
+        ],
+        [
+          "s3",
+          "s5"
+        ],
+        [
+          "s4",
+          "s6"
+        ],
+        [
+          "s7",
+          "s8"
+        ]
+      ]
+    },
+    {
+      "id": "config-values",
+      "goal": "Tune the Gannet API timeouts and limits for the load test next week",
+      "entries": [
+        {
+          "id": "c1",
+          "text": "Request timeout for the public API: 30s."
+        },
+        {
+          "id": "c2",
+          "text": "Webhook delivery timeout: 10s, separate from the public API timeout."
+        },
+        {
+          "id": "c3",
+          "text": "Max upload size: 25 MB, enforced in src/http/limits.ts."
+        },
+        {
+          "id": "c4",
+          "text": "Request timeout for the public API changed to 45s after the slow-report incident."
+        },
+        {
+          "id": "c5",
+          "text": "Connection pool size: 20 per instance."
+        },
+        {
+          "id": "c6",
+          "text": "Max upload size stays 25 MB; the load test must also cover uploads at exactly 25 MB."
+        },
+        {
+          "id": "c7",
+          "text": "Connection pool size raised to 40 per instance; the database allows 400 connections across 10 instances."
+        },
+        {
+          "id": "c8",
+          "text": "Load test runs from tools/loadtest/ with k6, 500 virtual users, 20 minutes."
+        },
+        {
+          "id": "n1",
+          "text": "Restarted the editor."
+        }
+      ],
+      "mustKeep": [
+        "c2",
+        "c3",
+        "c4",
+        "c6",
+        "c7",
+        "c8"
+      ],
+      "mustDrop": [
+        "c1",
+        "c5"
+      ],
+      "pairs": [
+        [
+          "c1",
+          "c4"
+        ],
+        [
+          "c5",
+          "c7"
+        ]
+      ]
+    },
+    {
+      "id": "mixed-session",
+      "goal": "Continue the Tern payments integration: fix the open webhook bug and get the integration PR merged under the team rules",
+      "entries": [
+        {
+          "id": "m1",
+          "text": "**Goal** Integrate the Tern card provider behind the PaymentPort and ship it behind a flag."
+        },
+        {
+          "id": "m2",
+          "text": "Rule: every external provider sits behind a port with an in-memory fake for tests."
+        },
+        {
+          "id": "m3",
+          "text": "Status: provider client written, no tests yet."
+        },
+        {
+          "id": "m4",
+          "text": "Ran `ls src/payments`, 6 files."
+        },
+        {
+          "id": "m5",
+          "text": "Blocker: the provider requires idempotency keys on every POST; the client does not send them."
+        },
+        {
+          "id": "m6",
+          "text": "Decision: idempotency keys are UUIDv7 generated per logical operation, stored with the payment row."
+        },
+        {
+          "id": "m7",
+          "text": "Status: client tests being written with the fake; idempotency keys still missing."
+        },
+        {
+          "id": "m8",
+          "text": "Webhook bug: signature check fails for events with unicode in the description; signature is computed over the parsed body instead of the raw body."
+        },
+        {
+          "id": "m9",
+          "text": "Blocker resolved: idempotency keys are sent on every POST since 2c7d9e1."
+        },
+        {
+          "id": "m10",
+          "text": "PR #120 opened for the integration, draft until the webhook bug is fixed."
+        },
+        {
+          "id": "m11",
+          "text": "Webhook signature is checked in src/payments/tern-webhook.ts at line 58."
+        },
+        {
+          "id": "m12",
+          "text": "Flag name: payments_tern_enabled, default off in every environment."
+        },
+        {
+          "id": "m13",
+          "text": "Status: webhook fix in progress, raw body now captured by the HTTP adapter."
+        },
+        {
+          "id": "m14",
+          "text": "Reviewer asked for the fake to also simulate a 429 with Retry-After."
+        },
+        {
+          "id": "m15",
+          "text": "Status: webhook fix done and tested with unicode fixtures; PR #120 ready for review."
+        },
+        {
+          "id": "m16",
+          "text": "Weather update: sunny."
+        },
+        {
+          "id": "m17",
+          "text": "The 429 simulation in the fake is still to do before PR #120 can merge."
+        }
+      ],
+      "mustKeep": [
+        "m1",
+        "m2",
+        "m6",
+        "m8",
+        "m9",
+        "m11",
+        "m12",
+        "m14",
+        "m15",
+        "m17"
+      ],
+      "mustDrop": [
+        "m3",
+        "m5",
+        "m7",
+        "m10",
+        "m13"
+      ],
+      "pairs": [
+        [
+          "m3",
+          "m7"
+        ],
+        [
+          "m3",
+          "m13"
+        ],
+        [
+          "m3",
+          "m15"
+        ],
+        [
+          "m5",
+          "m9"
+        ],
+        [
+          "m7",
+          "m13"
+        ],
+        [
+          "m7",
+          "m15"
+        ],
+        [
+          "m10",
+          "m15"
+        ],
+        [
+          "m13",
+          "m15"
+        ]
+      ]
+    },
+    {
+      "id": "memory-rules",
+      "goal": "Continue the Albatross export work: backfill the September exports under the repo rules",
+      "entries": [
+        {
+          "id": "r1",
+          "text": "- **Rule:** never push to main; every change goes through a PR the maintainer merges."
+        },
+        {
+          "id": "r2",
+          "text": "- **Rule:** agents never print or log values from .env files."
+        },
+        {
+          "id": "i1",
+          "text": "- Repo albatross-core; default branch main; CI is the `check` workflow."
+        },
+        {
+          "id": "d1",
+          "text": "- **Done:** PR #61 (export storage bucket) merged 2026-09-30; the bucket config lives in config/exports.yaml."
+        },
+        {
+          "id": "d2",
+          "text": "- **Done:** migration 0042 (export_runs table) applied in staging and production."
+        },
+        {
+          "id": "i2",
+          "text": "- task_5e19b2 tracks the export rewrite; the data team owns it."
+        },
+        {
+          "id": "x1",
+          "text": "- **Pending:** PR #64 (export rewrite) waiting on review."
+        },
+        {
+          "id": "r3",
+          "text": "- Deploy window: Tuesdays and Thursdays 10:00-12:00 UTC only."
+        },
+        {
+          "id": "x2",
+          "text": "- ADR 0019: reserved for the export file format."
+        },
+        {
+          "id": "x3",
+          "text": "- **Status:** export rewrite blocked on the file format decision."
+        },
+        {
+          "id": "d3",
+          "text": "- ADR 0019 DONE: exports are newline-delimited JSON, gzip, one file per tenant per day."
+        },
+        {
+          "id": "d4",
+          "text": "- **Done:** PR #64 merged as 7d2e90a; the export rewrite is live behind export_v2."
+        },
+        {
+          "id": "s1",
+          "text": "- **Status:** export rewrite shipped; next is the backfill of the September exports."
+        },
+        {
+          "id": "i3",
+          "text": "- Staging admin: https://staging.albatross.example/admin."
+        },
+        {
+          "id": "l1",
+          "text": "- Lesson: the export job needs 4 GB of memory; 2 GB runs out on large tenants."
+        }
+      ],
+      "mustKeep": [
+        "r1",
+        "r2",
+        "i1",
+        "d1",
+        "d2",
+        "i2",
+        "r3",
+        "d3",
+        "d4",
+        "s1",
+        "i3",
+        "l1"
+      ],
+      "mustDrop": [
+        "x1",
+        "x2",
+        "x3"
+      ],
+      "pairs": [
+        [
+          "x1",
+          "d4"
+        ],
+        [
+          "x2",
+          "d3"
+        ],
+        [
+          "x3",
+          "s1"
+        ]
+      ]
+    },
+    {
+      "id": "memory-ops",
+      "goal": "Handle today's Cormorant payments operations safely: ship the checkout follow-ups under the ops rules",
+      "entries": [
+        {
+          "id": "r1",
+          "text": "- **Rule:** production database changes need a second reviewer and a rollback script."
+        },
+        {
+          "id": "r2",
+          "text": "- **Rule:** no deploys while an incident is open."
+        },
+        {
+          "id": "i1",
+          "text": "- Cluster cormorant-prod-eu1, namespace payments; staging is cormorant-stg-eu1."
+        },
+        {
+          "id": "d1",
+          "text": "- **Done:** rotated the payments signing key on 2026-09-12; the old key stops verifying on 2026-10-12."
+        },
+        {
+          "id": "d2",
+          "text": "- **Done:** incident INC-3301 closed; root cause was an expired TLS certificate on the queue broker."
+        },
+        {
+          "id": "i2",
+          "text": "- The certificate expiry alert now fires 21 days ahead (alert_tls_21d)."
+        },
+        {
+          "id": "x1",
+          "text": "- **Open:** INC-3317, latency spike on checkout, investigating."
+        },
+        {
+          "id": "x2",
+          "text": "- **Open:** INC-3317 traced to a missing index on orders(created_at); fix in PR #88."
+        },
+        {
+          "id": "d3",
+          "text": "- **Closed:** INC-3317 resolved by PR #88 (index added); checkout p99 back to 180 ms."
+        },
+        {
+          "id": "i3",
+          "text": "- On-call this week is the payments rota; escalate through the pager."
+        },
+        {
+          "id": "v1",
+          "text": "- Pin queue-client@4.2.1: 4.3.0 drops the TLS session cache."
+        },
+        {
+          "id": "i4",
+          "text": "- Broker restart runbook: docs/runbooks/broker-restart.md."
+        }
+      ],
+      "mustKeep": [
+        "r1",
+        "r2",
+        "i1",
+        "d1",
+        "d2",
+        "i2",
+        "d3",
+        "i3",
+        "v1",
+        "i4"
+      ],
+      "mustDrop": [
+        "x1",
+        "x2"
+      ],
+      "pairs": [
+        [
+          "x1",
+          "x2"
+        ],
+        [
+          "x1",
+          "d3"
+        ],
+        [
+          "x2",
+          "d3"
+        ]
+      ]
+    },
+    {
+      "id": "newest-first-notes",
+      "goal": "Prepare the Puffin v1 sunset notice and keep the v2 facts correct",
+      "order": "newest-first",
+      "entries": [
+        {
+          "id": "s2",
+          "text": "- **Status:** v2 API launched to all tenants; the v1 sunset date is 2027-01-31."
+        },
+        {
+          "id": "s1",
+          "text": "- **Status:** v2 API in beta with three pilot tenants."
+        },
+        {
+          "id": "k1",
+          "text": "- **Decision:** v1 stays read-only after the sunset date; nothing is deleted."
+        },
+        {
+          "id": "a2",
+          "text": "- ADR 0008 DONE: v2 pagination is cursor-based, at most 200 items a page."
+        },
+        {
+          "id": "a1",
+          "text": "- ADR 0008: reserved for v2 pagination."
+        },
+        {
+          "id": "r1",
+          "text": "- **Rule:** a breaking API change needs a deprecation notice 90 days ahead."
+        },
+        {
+          "id": "p2",
+          "text": "- PR #140 merged: cursor pagination for /v2/orders."
+        },
+        {
+          "id": "p1",
+          "text": "- PR #140 open, waiting on API review."
+        },
+        {
+          "id": "f2",
+          "text": "- Correction: the v2 rate limit is 600 requests per minute per tenant; the launch post said 6000 by mistake."
+        },
+        {
+          "id": "f1",
+          "text": "- The v2 rate limit is 6000 requests per minute per tenant."
+        },
+        {
+          "id": "k2",
+          "text": "- Pilot tenants: puffin-pilot-a, puffin-pilot-b, puffin-pilot-c."
+        }
+      ],
+      "mustKeep": [
+        "s2",
+        "k1",
+        "a2",
+        "r1",
+        "p2",
+        "f2",
+        "k2"
+      ],
+      "mustDrop": [
+        "s1",
+        "a1",
+        "p1",
+        "f1"
+      ],
+      "pairs": [
+        [
+          "s1",
+          "s2"
+        ],
+        [
+          "a1",
+          "a2"
+        ],
+        [
+          "p1",
+          "p2"
+        ],
+        [
+          "f1",
+          "f2"
+        ]
+      ]
+    },
+    {
+      "id": "edited-in-place",
+      "goal": "Finish the Shearwater scheduler migration and clean up the old cron entries safely",
+      "order": "mixed",
+      "entries": [
+        {
+          "id": "t2",
+          "text": "- task_3b7c10 (move the cron jobs to the scheduler) done; all 14 jobs run on the scheduler since Monday."
+        },
+        {
+          "id": "r1",
+          "text": "- **Rule:** a job moved to the scheduler keeps its old cron entry commented out for one week."
+        },
+        {
+          "id": "t1",
+          "text": "- task_3b7c10 in progress: 9 of 14 jobs moved."
+        },
+        {
+          "id": "i1",
+          "text": "- Scheduler endpoint scheduler.internal:7443, authenticated by mTLS."
+        },
+        {
+          "id": "k2",
+          "text": "- Decision reversed: retries are handled by the scheduler, not by each job."
+        },
+        {
+          "id": "t3",
+          "text": "- task_4d8e21 (remove the commented cron entries) pending; not before 2026-10-20."
+        },
+        {
+          "id": "k1",
+          "text": "- Decision: each job implements its own retry loop."
+        },
+        {
+          "id": "j2",
+          "text": "- Job nightly_rollup moved to 03:30 UTC to stay out of the backup window."
+        },
+        {
+          "id": "i2",
+          "text": "- Backup window: 02:00-03:00 UTC every night."
+        },
+        {
+          "id": "j1",
+          "text": "- Job nightly_rollup runs at 02:00 UTC."
+        }
+      ],
+      "mustKeep": [
+        "t2",
+        "r1",
+        "i1",
+        "k2",
+        "t3",
+        "j2",
+        "i2"
+      ],
+      "mustDrop": [
+        "t1",
+        "k1",
+        "j1"
+      ],
+      "pairs": [
+        [
+          "t1",
+          "t2"
+        ],
+        [
+          "k1",
+          "k2"
+        ],
+        [
+          "j1",
+          "j2"
+        ]
+      ]
+    }
+  ]
+}

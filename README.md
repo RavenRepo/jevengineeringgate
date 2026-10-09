@@ -65,7 +65,7 @@ Restart your agent. `JEV_HOOKS_DISABLE=1` is the runtime kill switch.
 | **L1** | Jev, on a tool call about to execute | ~1s, cached 6h | [`hooks/jev-pretooluse.cjs`](hooks/jev-pretooluse.cjs) |
 | **L2** | Jev, on an incoming task | ~1s | [`hooks/jev-intake.cjs`](hooks/jev-intake.cjs) |
 | **L3** | Jev, on finished work and on routing | ~1s | [`lib/verify.cjs`](lib/verify.cjs) |
-| **L4** | Jev, on what to keep in context | ~1.5s / 25 entries | [`lib/compact.cjs`](lib/compact.cjs) |
+| **L4** | Jev, on what to keep in context | ~1.5s / 25 entries; supersession ~1s / 50 entries | [`lib/compact.cjs`](lib/compact.cjs) |
 | **L5** | Jev (or Liquid d1), on which lines of a long command output the reader needs | 0 for passing runs; ~1s / 25 blocks | [`hooks/jev-posttooluse.cjs`](hooks/jev-posttooluse.cjs), [`lib/filter.cjs`](lib/filter.cjs) |
 | **L6** | Jev, on which model a subagent needs | ~1s per spawn | [`lib/route-agent.cjs`](lib/route-agent.cjs) |
 
@@ -80,7 +80,7 @@ reaches the model.
 jev-gate    --request "add OAuth login"               # 0 proceed, 3 escalate
 jev-route   --request "rename a local variable"       # deterministic|cheap|strong|human
 jev-verify  --artifact-file out.ts --requirements "…" # 0 accept, 3 revise
-jev-compact --goal "…" --file history.json            # relevance filter
+jev-compact --goal "…" --file history.json            # relevance and supersession filter
 npm test 2>&1 | jev-filter --goal "why the tests fail"  # keep the lines the goal needs
 ```
 
@@ -247,8 +247,89 @@ DROPPED  0.14  Ran `ls` in the repo root, saw 14 files
 DROPPED  0.05  Weather is nice today, unrelated aside
 ```
 
-A failed chunk keeps everything: dropping an entry cannot be undone in-process,
-keeping one only costs tokens.
+Scoring each entry on its own misses one kind of dead weight: an entry another
+entry has replaced. An old status line is still on-topic. On 50 real
+orchestration-memory entries, four stale ones (an old "ready for review" line
+next to a newer one, "ADR N: reserved for X" left beside "ADR N done") scored
+0.71–0.74, the same as live ones, and nothing was dropped.
+
+So there is a second pass. Code picks the pairs worth asking about, with no
+model call: entries that share an anchor (an issue or ADR number, a SHA, a
+path, a backticked span, a version or `name@version`, an id, a zero-padded
+number, a date, the leading label or keyword run) or enough content words, at
+most four per entry. Jev is asked, pair by pair, whether one entry makes the
+other out of date — a newer status, a reversed decision, the item done, a
+corrected value — and told to answer no for different subjects, for an entry
+that only adds detail, and for an entry holding a rule, constraint or
+identifier the other omits.
+
+Notes and memory files are edited in place, so list order is not time. Unless
+every entry carries `meta.ts`, entries are treated as unordered: each pair is
+asked both ways, and one side is dropped only when the other direction answers
+below 0.5; if each says it replaces the other, both stay. The dropped entry's
+replacement must survive the final set, directly or through its own
+replacement. Dropped entries say why (`reason: "irrelevant" | "superseded"`,
+with `supersededBy`, `ps` and, unordered, `psReverse`).
+
+The clean number first. On `eval/compact-cases-holdout-2.json`, four synthetic
+cases written after every setting was fixed and run without tuning, **26/26
+must-keep entries survived; supersession caught 1–2 of the 6 superseded
+entries in two runs, and the relevance pass dropped 3 more.** Six must-drop
+entries are too few to bound the catch rate; read it as "it catches some",
+and the must-keep number as the one that matters. Only 3 of those 6 pairs
+share an anchor, so most were never asked about.
+
+Measured, not guessed, on `eval/compact-cases.json` (14 synthetic sessions:
+status logs, ADR number allocations, PRs going from pending to merged,
+reversed decisions, corrected facts, memory files, notes with the newest entry
+first):
+
+- The relevance question used to drop entries "superseded, already acted on",
+  so a merged PR or a finished task read as noise: 11–14 of 104 must-keep
+  entries were lost. It now names current status, rules and identifiers as
+  reasons to keep. And it compares the goal with the entry's own text, because
+  entries referenced as `entries[9]` or later scored 0.70 on average against
+  0.86 before them. Now none are lost.
+- Supersession texts are keyed by a short hash, not listed: in a list the
+  model took the lower index for the older entry, and judged a case's newest
+  status line out of date because of an older one.
+- The threshold. At **0.6, 104/104 must-keep entries survive and 27–28 of 44
+  superseded entries are caught**, over three runs, for 33 requests across the
+  14 cases. Nothing was lost from 0.5 up; the highest answer against a
+  must-keep entry, with its reverse below 0.5, was 0.31. On four held-out
+  cases: 28/28 kept, 8/10 caught. Re-run with `npm run eval:compact`.
+
+That default was chosen after the held-out results were seen, so the first
+held-out set is not clean for it. The alternative was asking every pair of a
+short list (`allPairsUpTo`, `--all-pairs-up-to`): it reached every true pair
+on the eval (64/64, against 59/64) but added wrong-subject answers, needed a
+threshold of 0.8, and caught 13–15 of 44 there and 5/10 on the held-out set,
+for 88 requests instead of 33 (1,225 pairs and 103 requests on a 50-entry
+memory file). The second held-out set, quoted above, was written after the
+choice.
+
+Limits. An entry that holds anything its replacement does not repeat stays,
+by design: a long status line that lists several items is only replaced by
+one covering all of them. An entry is only dropped as superseded when the
+relevance pass keeps its replacement. An entry longer than 1,200 characters is
+never dropped as superseded: the model sees only its first 1,200, so it cannot
+judge the rest out of date. It can still replace a shorter one. On 50 real
+memory entries the pass dropped nothing.
+
+### What it cannot catch
+
+Supersession only sees what the text says. An item that moved elsewhere — a
+pending list folded into a PR, a task handed to another tracker — is invisible
+unless one of the entries says so. Neither can it replace an entry whose
+replacement shares no anchor and few words with it ("Decision: X", then
+"Decision reversed: Y" under another label). Notes that should compact well
+carry a date (`meta.ts`) or say what they replace ("ADR 30 done, replaces the
+reservation", "moved to #50").
+
+A failed request keeps everything it asked about: dropping an entry cannot be
+undone in-process, keeping one only costs tokens. `--no-supersede` turns the second pass off,
+`--supersede-threshold` moves it, `--order chronological` trusts list order,
+`--all-pairs-up-to N` asks every pair of up to N entries (within `--max-pairs`).
 
 ## Measured cost
 

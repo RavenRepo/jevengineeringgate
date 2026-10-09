@@ -1,0 +1,75 @@
+{
+  "notes": "Second held-out supersession set, written after the default (anchor pairs, unordered when entries carry no meta.ts, supersede 0.6) was chosen, and run once at that default without tuning. Synthetic throughout. `node eval/compact.cjs --cases eval/compact-cases-holdout-2.json`.",
+  "cases": [
+    {
+      "id": "h2-timestamped-log",
+      "goal": "Finish the Osprey invoice PDF fix and get it deployed under the deploy rules",
+      "entries": [
+        { "id": "t1", "text": "Bug #431: invoice PDFs render the tax line twice for EU customers.", "meta": { "ts": "2026-10-01T09:00:00Z" } },
+        { "id": "t2", "text": "Rule: PDF template changes need a visual diff approved by the billing owner.", "meta": { "ts": "2026-10-01T09:05:00Z" } },
+        { "id": "t3", "text": "Bug #431 cause: the EU branch in templates/invoice.hbs adds tax after the subtotal partial already did.", "meta": { "ts": "2026-10-01T11:20:00Z" } },
+        { "id": "t4", "text": "PR #437 for #431 opened; visual diff pending.", "meta": { "ts": "2026-10-01T15:40:00Z" } },
+        { "id": "t5", "text": "Deploys of the billing service are frozen until the October close finishes on 2026-10-03.", "meta": { "ts": "2026-10-02T08:00:00Z" } },
+        { "id": "t6", "text": "PR #437 visual diff approved by the billing owner; merged.", "meta": { "ts": "2026-10-02T13:10:00Z" } },
+        { "id": "t7", "text": "Coffee machine on floor 3 is broken again.", "meta": { "ts": "2026-10-02T14:00:00Z" } },
+        { "id": "t8", "text": "Billing deploy freeze lifted: the October close finished early on 2026-10-02.", "meta": { "ts": "2026-10-02T18:30:00Z" } },
+        { "id": "t9", "text": "Regenerate the 212 affected invoices after the deploy, with the regen_invoices job, dry run first.", "meta": { "ts": "2026-10-02T18:45:00Z" } }
+      ],
+      "mustKeep": ["t1", "t2", "t3", "t6", "t8", "t9"],
+      "mustDrop": ["t4", "t5"],
+      "pairs": [["t4", "t6"], ["t5", "t8"]]
+    },
+    {
+      "id": "h2-curated-team-notes",
+      "goal": "Plan the Heron mobile 5.2 release work for this sprint under the team's rules",
+      "entries": [
+        { "id": "c1", "text": "- **Owner:** release captain for 5.2 is the platform squad." },
+        { "id": "c2", "text": "- **Rule:** no feature lands after the 5.2 code freeze on 2026-11-14." },
+        { "id": "c3", "text": "- Min supported iOS raised to 17 for 5.2 (was 16); Android stays at API 28." },
+        { "id": "c4", "text": "- **Open:** crash on resume from background (issue #1187), cause unknown." },
+        { "id": "c5", "text": "- Min supported iOS: 16." },
+        { "id": "c6", "text": "- Analytics SDK pinned to tracker-sdk@3.8.2; 3.9.0 breaks offline batching." },
+        { "id": "c7", "text": "- **Fixed:** crash on resume (issue #1187) was a stale auth token refresh; fixed in PR #1192, in 5.1.3." },
+        { "id": "c8", "text": "- Store screenshots must be regenerated for every release that changes the home screen." },
+        { "id": "c9", "text": "- 5.2 changes the home screen layout (new quick actions row)." }
+      ],
+      "mustKeep": ["c1", "c2", "c3", "c6", "c7", "c8", "c9"],
+      "mustDrop": ["c4", "c5"],
+      "pairs": [["c4", "c7"], ["c5", "c3"]]
+    },
+    {
+      "id": "h2-vendor-evaluation",
+      "goal": "Finish choosing the Pelican email delivery vendor and record the decision",
+      "entries": [
+        { "id": "v1", "text": "Shortlist for email delivery: vendor A, vendor B, vendor C." },
+        { "id": "v2", "text": "Requirement: EU data residency and a signed DPA before any customer data is sent." },
+        { "id": "v3", "text": "Vendor C dropped from the shortlist: no EU residency." },
+        { "id": "v4", "text": "Trial results: vendor A 99.2% inbox placement, vendor B 98.7%." },
+        { "id": "v5", "text": "Leaning towards vendor B on price." },
+        { "id": "v6", "text": "Decision: vendor A, because the inbox placement gap outweighs the price difference; DPA signed 2026-10-06." },
+        { "id": "v7", "text": "Migration plan: move transactional email first, marketing email a month later." },
+        { "id": "v8", "text": "Vendor A sending limit on the starter plan is 50k emails a day; upgrade needed before marketing moves." }
+      ],
+      "mustKeep": ["v2", "v3", "v4", "v6", "v7", "v8"],
+      "mustDrop": ["v5"],
+      "pairs": [["v5", "v6"]]
+    },
+    {
+      "id": "h2-similar-but-different",
+      "goal": "Keep the Grebe data pipeline healthy this week and follow the data rules",
+      "entries": [
+        { "id": "s1", "text": "Job daily_orders_etl failed on Monday: upstream schema change in the orders feed." },
+        { "id": "s2", "text": "Job daily_orders_etl fixed: mapping updated for the new orders feed schema, backfilled Monday." },
+        { "id": "s3", "text": "Job daily_returns_etl failed on Tuesday: disk full on the worker." },
+        { "id": "s4", "text": "Rule: personal data columns are hashed before they reach the warehouse." },
+        { "id": "s5", "text": "Rule: personal data columns are hashed before they reach the warehouse, and the hash salt rotates every quarter." },
+        { "id": "s6", "text": "Warehouse cost alert threshold: 4,000 per month." },
+        { "id": "s7", "text": "Job weekly_rollup runs Sundays at 05:00 UTC and reads from daily_orders_etl output." },
+        { "id": "s8", "text": "Disk on the ETL worker was resized to 500 GB on Wednesday." }
+      ],
+      "mustKeep": ["s2", "s3", "s4", "s5", "s6", "s7", "s8"],
+      "mustDrop": ["s1"],
+      "pairs": [["s1", "s2"]]
+    }
+  ]
+}

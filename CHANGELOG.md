@@ -4,6 +4,47 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Supersession in compaction** (`lib/compact.cjs`, `jev-compact`). An entry
+  another entry has replaced is dropped when its replacement survives. Pairs
+  that share an anchor or content words are judged by Jev; `allPairsUpTo`
+  judges every pair of a short list instead, within `maxPairs` (2000).
+  Entries without `meta.ts` are unordered (`order`): each pair is judged both
+  ways and one side drops only when the reverse answer is below 0.5. Dropped
+  entries carry `reason`, `supersededBy`, `ps` and `psReverse`; stats add
+  `superseded`, `order`, `pairsJudged`, `supersedeRequests` and
+  `failedSupersedeRequests`, and `requests` is still the relevance count.
+  `--no-supersede`, `--supersede-threshold`, `--order`, `--all-pairs-up-to`
+  and `--max-pairs` on the CLI. The default threshold, 0.6, kept every
+  must-keep entry from 0.5 up over three eval runs; it was chosen after the
+  first held-out set was seen.
+- **`eval/compact-cases.json`, two held-out sets and `npm run eval:compact`.**
+  14 synthetic cases with their true pairs, and four held out in each of
+  `eval/compact-cases-holdout.json` and `eval/compact-cases-holdout-2.json`;
+  the second was written after the default was chosen. The harness reports must-keep recall, catches, candidate recall
+  and the highest answer against a must-keep entry.
+
+### Changed
+
+- **`filterEntries` and `jev-compact` now run supersession by default.**
+  Existing callers get a second pass: more requests (on the 14 eval cases, 19
+  supersession requests on top of 14 for relevance) and entries that may now
+  be dropped as superseded. Entries without `meta.ts` are judged unordered.
+  Pass `supersede: false` or `--no-supersede` for the old behaviour.
+- **The relevance pass costs more input tokens.** Each question now carries
+  its entry's text, while the chunk's entries stay in the state: about 194
+  input tokens a question, from about 156 (measured on the eval).
+
+### Fixed
+
+- **The compaction relevance pass dropped done items.** Its question said to
+  drop entries "superseded, already acted on", so a merged PR or a finished
+  task scored as noise; it also scored entries late in a request lower. On
+  the eval it lost 11–14 of 104 must-keep entries; now 0.
+
 ## [1.0.0] - 2026-09-20
 
 First public release.
