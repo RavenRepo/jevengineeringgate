@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// jev-compact --goal "<goal>" [--file entries.json|-] [--keep 0.5] [--pin-first N] [--pin-last N] [--json]
+// jev-compact --goal "<goal>" [--file entries.json|-] [--keep 0.5] [--pin-first N] [--pin-last N] [--no-supersede] [--supersede-threshold N] [--json]
 // Entries: a JSON array of strings/objects, or JSONL, on stdin or in --file.
 // Prints the surviving entries; --json prints the full result with scores.
+// Entries a later entry supersedes are dropped too; --no-supersede turns that off.
 const { readFileSync } = require("node:fs");
-const { filterEntries } = require("../lib/compact.cjs");
+const { filterEntries, SUPERSEDE_THRESHOLD } = require("../lib/compact.cjs");
 
 function parseEntries(raw) {
   const t = raw.trim();
@@ -19,7 +20,7 @@ async function main() {
   const get = (f, d = "") => { const i = args.indexOf(f); return i >= 0 && i + 1 < args.length ? args[i + 1] : d; };
   const goal = get("--goal");
   if (!goal) {
-    console.error('Usage: jev-compact --goal "<goal>" [--file entries.json|-] [--keep 0.5] [--pin-first N] [--pin-last N] [--json]');
+    console.error('Usage: jev-compact --goal "<goal>" [--file entries.json|-] [--keep 0.5] [--pin-first N] [--pin-last N] [--no-supersede] [--supersede-threshold N] [--json]');
     process.exit(2);
   }
   const file = get("--file", "-");
@@ -30,13 +31,15 @@ async function main() {
     keepThreshold: Number(get("--keep", "0.5")),
     pinFirst: Number(get("--pin-first", "0")),
     pinLast: Number(get("--pin-last", "0")),
+    supersede: !args.includes("--no-supersede"),
+    supersedeThreshold: Number(get("--supersede-threshold", String(SUPERSEDE_THRESHOLD))),
   });
   if (args.includes("--json")) {
     console.log(JSON.stringify(res, null, 2));
   } else {
     for (const e of res.kept) console.log(e.text);
     const s = res.stats;
-    console.error(`[jev-compact] kept ${s.entriesKept}/${s.entriesIn} entries, -${s.reductionPct}% chars, ${s.requests} request(s), ${s.latencyMs}ms`);
+    console.error(`[jev-compact] kept ${s.entriesKept}/${s.entriesIn} entries (${s.superseded} superseded), -${s.reductionPct}% chars, ${s.requests + s.supersedeRequests} request(s), ${s.latencyMs}ms`);
   }
 }
 main().catch((e) => { console.error("jev-compact:", String((e && e.message) || e).slice(0, 200)); process.exit(1); });
