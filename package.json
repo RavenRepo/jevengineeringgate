@@ -10,6 +10,7 @@
     "calibrate:record": "node eval/calibrate.cjs --record",
     "calibrate": "node eval/calibrate.cjs",
     "eval:filter": "node eval/filter.cjs",
+    "eval:compact": "node eval/compact.cjs",
     "eval:route": "node eval/route-agents.cjs",
     "gate": "node bin/jev-gate.cjs"
   },
